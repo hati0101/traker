@@ -15,3 +15,4 @@ INSERT INTO access_keys (key, label, expires, active) VALUES ('260620', '관리�
 INSERT INTO access_keys (key, label, expires, active) VALUES ('1001', '유저A', '2026-07-31', 1);
 INSERT INTO access_keys (key, label, expires, active) VALUES ('1002', '유저B', '2026-07-31', 1);
 INSERT INTO access_keys (key, label, expires, active) VALUES ('1003', '유저C', '2026-07-31', 1);
+ 
