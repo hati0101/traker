@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOOP 시청자 추적기</title>
+<style>
+  :root { --bg: #0f0f1a; --card: #1a1a2e; --border: #2a2a40; --accent: #7fdbca; --danger: #e94560; --warn: #f5a623; --text: #eee; --dim: #888; --found: #4eff4e; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: '맑은 고딕', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .container { max-width: 960px; margin: 0 auto; padding: 16px; }
+
+  h1 { font-size: 22px; color: var(--accent); margin-bottom: 16px; }
+  h1 small { font-size: 12px; color: var(--dim); font-weight: normal; }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .row:last-child { margin-bottom: 0; }
+
+  label { font-size: 13px; color: var(--dim); white-space: nowrap; }
+  input[type="text"], input[type="number"] {
+    padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px;
+    background: #0f1a30; color: var(--text); font-size: 14px;
+  }
+  input[type="text"] { width: 220px; }
+  input[type="number"] { width: 65px; }
+  input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); }
+  input#targetId { font-size: 16px; font-weight: bold; width: 200px; }
+
+  .btn { padding: 8px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; transition: opacity 0.2s; }
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-scan { background: var(--accent); color: #111; font-size: 15px; }
+  .btn-stop { background: var(--danger); color: #fff; }
+
+  .progress-wrap { height: 24px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .progress-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; width: 0%; }
+  .progress-text { font-size: 12px; color: var(--dim); min-width: 80px; text-align: right; }
+
+  /* 결과 */
+  .results-header { font-size: 15px; font-weight: bold; margin-bottom: 6px; color: var(--found); }
+  .result-card {
+    background: #122a1a; border: 1px solid #1e4a2e; border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 16px;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+  .result-card .bj-name { font-size: 16px; font-weight: bold; color: var(--found); min-width: 120px; }
+  .result-card .bj-id { font-size: 13px; color: var(--dim); min-width: 100px; }
+  .result-card .bj-title { font-size: 13px; color: var(--text); flex: 1; }
+  .result-card .found-time { font-size: 12px; color: var(--dim); }
+
+  .no-result { text-align: center; padding: 30px; color: var(--dim); font-size: 14px; }
+
+  /* 로그 */
+  .log-header { font-size: 14px; font-weight: bold; margin: 10px 0 6px; color: var(--accent); display: flex; justify-content: space-between; }
+  .log-header button { font-size: 11px; padding: 2px 8px; background: var(--border); border: none; color: var(--dim); border-radius: 3px; cursor: pointer; }
+  #log {
+    background: #0a0a12; border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px; font-family: 'Consolas', monospace; font-size: 11px;
+    height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+  }
+  .log-ok { color: #4eff4e; } .log-warn { color: #f5a623; } .log-err { color: #e94560; } .log-data { color: #a8d8ea; }
+
+  @media (max-width: 768px) {
+    input#targetId { width: 160px; }
+    .result-card { flex-wrap: wrap; gap: 6px; }
+    #log { height: 160px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔍 SOOP 시청자 추적기 <small>어느 방에 있을까?</small></h1>
+
+  <!-- 검색 설정 -->
+  <div class="panel">
+    <div class="row">
+      <label>시청자 아이디:</label>
+      <input type="text" id="targetId" placeholder="검색할 아이디">
+      <button class="btn btn-scan" id="btnScan" onclick="startScan()">🔍 검색</button>
+      <button class="btn btn-stop" id="btnStop" onclick="stopScan()" disabled>⏹ 중지</button>
+    </div>
+    <div class="row">
+      <input type="checkbox" id="chkVirtual" checked>
+      <label for="chkVirtual">버추얼 태그 필터</label>
+
+      <span style="margin-left:16px"></span>
+      <label>시청자 수:</label>
+      <input type="number" id="viewerMin" value="0" min="0">
+      <label>~</label>
+      <input type="number" id="viewerMax" value="0" min="0">
+      <label style="font-size:11px;color:var(--dim)">(0=제한없음)</label>
+
+      <span style="margin-left:16px"></span>
+      <label>동시 스캔:</label>
+      <input type="number" id="concurrency" value="15" min="1" max="30" style="width:45px">
+    </div>
+  </div>
+
+  <!-- 진행률 -->
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-text" id="progressText">대기 중</span>
+  </div>
+
+  <!-- 결과 -->
+  <div class="results-header">✅ 발견: <span id="foundCount">0</span>건</div>
+  <div id="results"><div class="no-result">검색 결과가 여기에 표시됩니다.</div></div>
+
+  <!-- 로그 -->
+  <div class="log-header">
+    <span>로그</span>
+    <button onclick="document.getElementById('log').innerHTML=''">클리어</button>
+  </div>
+  <div id="log"></div>
+</div>
+
+<script>
+// ═══ 상수 ═══
+const STARTER = "\x1b\t", SEP = "\x0c";
+const VIRTUAL_CATE = "00810000";
+const VIRTUAL_KEYWORDS = ["버추얼", "버츄얼", "vtuber", "vtube", "virtual"];
+const SUFFIX_RE = /\(\d+\)$/;
+
+let scanning = false;
+let abortCtrl = null;
+
+// ═══ 유틸 ═══
+function log(msg, cls = '') {
+  const el = document.getElementById('log');
+  const t = new Date().toLocaleTimeString('ko', { hour12: false });
+  el.innerHTML += `<span class="${cls}">[${t}] ${msg}</span>\n`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function cleanId(raw) { return raw.replace(SUFFIX_RE, '').trim(); }
+
+function setProgress(cur, total) {
+  const pct = total > 0 ? (cur / total * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${cur}/${total}`;
+}
+
+function setScanning(v) {
+  scanning = v;
+  document.getElementById('btnScan').disabled = v;
+  document.getElementById('btnStop').disabled = !v;
+}
+
+function buildPacket(type, payload) {
+  const len = new TextEncoder().encode(payload).length;
+  return `${STARTER}${type}${String(len).padStart(6, '0')}00${payload}`;
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function addFoundResult(bjNick, bjId, broadTitle) {
+  const container = document.getElementById('results');
+  // 첫 결과면 "검색 결과가 여기에 표시됩니다" 제거
+  if (container.querySelector('.no-result')) container.innerHTML = '';
+
+  const time = new Date().toLocaleTimeString('ko', { hour12: false });
+  const card = document.createElement('div');
+  card.className = 'result-card';
+  card.innerHTML = `
+    <span class="bj-name">${esc(bjNick)}</span>
+    <span class="bj-id">${esc(bjId)}</span>
+    <span class="bj-title">${esc(broadTitle)}</span>
+    <span class="found-time">${time}</span>
+  `;
+  container.appendChild(card);
+
+  const count = container.querySelectorAll('.result-card').length;
+  document.getElementById('foundCount').textContent = count;
+}
+
+// ═══ API 호출 (Workers 프록시) ═══
+async function fetchBroadcasts(page, signal) {
+  const resp = await fetch(`/api/broadcasts?page=${page}`, { signal });
+  const data = await resp.json();
+  return data.broad || [];
+}
+
+async function fetchDetail(bjId, signal) {
+  const resp = await fetch(`/api/detail?bjid=${bjId}`, { signal });
+  const data = await resp.json();
+  return data.CHANNEL || null;
+}
+
+// ═══ WebSocket: 대상 시청자가 이 방송에 있는지 체크 ═══
+function scanForViewer(channel, targetId, timeoutMs = 10000) {
+  return new Promise((resolve) => {
+    const port = parseInt(channel.CHPT) + 1;
+    const url = `wss://${channel.CHDOMAIN.toLowerCase()}:${port}/Websocket/${channel.BJID}`;
+
+    let ws, timer, viewerTimer;
+    let resolved = false;
+    let found = false;
+
+    function done() {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      if (viewerTimer) clearTimeout(viewerTimer);
+      try { ws.close(); } catch {}
+      resolve(found);
+    }
+
+    function foundAndDone() {
+      found = true;
+      done();
+    }
+
+    try { ws = new WebSocket(url, 'chat'); } catch { resolve(false); return; }
+
+    timer = setTimeout(done, timeoutMs);
+
+    function resetViewerTimer() {
+      if (viewerTimer) clearTimeout(viewerTimer);
+      viewerTimer = setTimeout(done, 2000);
+    }
+
+    function processPacket(p) {
+      if (!p || p.length < 6) return;
+      const startIdx = p.indexOf(STARTER);
+      if (startIdx < 0) return;
+      const pkt = p.substring(startIdx);
+      if (pkt.length < 6) return;
+      const t = pkt.substring(2, 6);
+
+      if (t === '0001') {
+        ws.send(buildPacket('0002', `${SEP}${channel.CHATNO}${SEP.repeat(5)}`));
+      } else if (t === '0127') {
+        // VIEWER 패킷 — 대상 아이디 매칭
+        const payload = pkt.length > 14 ? pkt.substring(14) : pkt;
+        const parts = payload.split(SEP);
+        for (let i = 1; i < parts.length - 1; i += 2) {
+          const id = parts[i].trim();
+          if (id && cleanId(id).toLowerCase() === targetId.toLowerCase()) {
+            foundAndDone();
+            return;
+          }
+        }
+        resetViewerTimer();
+      } else if (t === '0007') {
+        done();
+      }
+    }
+
+    ws.onopen = () => {
+      ws.send(buildPacket('0001', `${SEP}${SEP}${SEP}16${SEP}`));
+    };
+
+    ws.onerror = done;
+    ws.onclose = done;
+
+    ws.onmessage = (evt) => {
+      if (resolved) return;
+      if (evt.data instanceof Blob) {
+        const reader = new FileReader();
+        reader.onload = () => processPacket(reader.result);
+        reader.readAsText(evt.data);
+      } else if (evt.data instanceof ArrayBuffer) {
+        processPacket(new TextDecoder().decode(evt.data));
+      } else {
+        processPacket(evt.data);
+      }
+    };
+  });
+}
+
+// ═══ 세마포어 ═══
+class Semaphore {
+  constructor(max) { this.max = max; this.cur = 0; this.queue = []; }
+  acquire() {
+    return new Promise(resolve => {
+      if (this.cur < this.max) { this.cur++; resolve(); }
+      else this.queue.push(resolve);
+    });
+  }
+  release() {
+    this.cur--;
+    if (this.queue.length > 0) { this.cur++; this.queue.shift()(); }
+  }
+}
+
+// ═══ 메인 검색 ═══
+async function startScan() {
+  if (scanning) return;
+
+  const targetId = document.getElementById('targetId').value.trim();
+  if (!targetId) { alert('시청자 아이디를 입력하세요.'); return; }
+
+  const useVirtual = document.getElementById('chkVirtual').checked;
+  const viewerMin = parseInt(document.getElementById('viewerMin').value) || 0;
+  const viewerMax = parseInt(document.getElementById('viewerMax').value) || 0;
+  const concurrency = parseInt(document.getElementById('concurrency').value) || 15;
+
+  setScanning(true);
+  document.getElementById('results').innerHTML = '<div class="no-result">검색 중...</div>';
+  document.getElementById('foundCount').textContent = '0';
+  document.getElementById('log').innerHTML = '';
+  setProgress(0, 0);
+
+  abortCtrl = new AbortController();
+  const signal = abortCtrl.signal;
+
+  try {
+    // 1) 방송 목록 수집
+    log(`=== [${targetId}] 검색 시작 ===`, 'log-ok');
+    log('방송 목록 수집 중...');
+
+    let allBroadcasts = [];
+    for (let page = 1; page <= 100; page++) {
+      if (signal.aborted) break;
+      try {
+        const broads = await fetchBroadcasts(page, signal);
+        if (!broads || broads.length === 0) break;
+        allBroadcasts.push(...broads);
+        if (page % 10 === 0) log(`  ${page}페이지 (누적 ${allBroadcasts.length}개)`);
+      } catch (e) {
+        if (signal.aborted) break;
+      }
+    }
+    log(`총 ${allBroadcasts.length}개 방송 수집`);
+
+    // 2) 버추얼 필터
+    let filtered = allBroadcasts;
+    if (useVirtual) {
+      filtered = allBroadcasts.filter(b =>
+        b.broad_cate_no === VIRTUAL_CATE ||
+        (b.hash_tags || []).some(tag =>
+          VIRTUAL_KEYWORDS.some(kw => tag.toLowerCase().includes(kw))
+        )
+      );
+      log(`버추얼 필터 → ${filtered.length}개`, 'log-data');
+    }
+
+    // 3) 시청자 수 필터
+    if (viewerMin > 0 || viewerMax > 0) {
+      filtered = filtered.filter(b => {
+        const cnt = parseInt(b.total_view_cnt) || 0;
+        return (viewerMin <= 0 || cnt >= viewerMin) && (viewerMax <= 0 || cnt <= viewerMax);
+      });
+      log(`시청자 필터(${viewerMin}~${viewerMax > 0 ? viewerMax : '∞'}) → ${filtered.length}개`, 'log-data');
+    }
+
+    if (filtered.length === 0) {
+      log('대상 방송이 없습니다.', 'log-warn');
+      document.getElementById('results').innerHTML = '<div class="no-result">필터 조건에 맞는 방송이 없습니다.</div>';
+      setScanning(false);
+      return;
+    }
+
+    // 4) 각 방송 스캔
+    log(`${filtered.length}개 방송에서 [${targetId}] 검색 시작...`);
+    const total = filtered.length;
+    let completed = 0;
+    let foundCount = 0;
+    const sem = new Semaphore(concurrency);
+
+    document.getElementById('results').innerHTML = '';
+
+    const tasks = filtered.map(async (broad) => {
+      if (signal.aborted) return;
+      await sem.acquire();
+      if (signal.aborted) { sem.release(); return; }
+
+      try {
+        const bjId = broad.user_id;
+        const detail = await fetchDetail(bjId, signal);
+
+        if (!detail || detail.RESULT !== 1 || !detail.CHDOMAIN) {
+          return;
+        }
+
+        log(`  스캔: ${detail.BJNICK || bjId}`, 'log-data');
+        const found = await scanForViewer(detail, targetId, 10000);
+
+        if (found) {
+          foundCount++;
+          log(`  ✅ 발견! ${detail.BJNICK}(${detail.BJID}) — ${detail.TITLE}`, 'log-ok');
+          addFoundResult(detail.BJNICK || bjId, detail.BJID, detail.TITLE || broad.broad_title || '');
+        }
+      } catch (e) {
+        if (!signal.aborted) log(`  ⚠ ${broad.user_id}: ${e.message}`, 'log-warn');
+      } finally {
+        completed++;
+        setProgress(completed, total);
+        sem.release();
+      }
+    });
+
+    await Promise.all(tasks);
+
+    if (signal.aborted) {
+      log('🛑 검색 중지됨', 'log-warn');
+    } else {
+      log(`=== 완료: ${total}개 스캔, ${foundCount}개 발견 ===`, 'log-ok');
+      if (foundCount === 0) {
+        document.getElementById('results').innerHTML =
+          `<div class="no-result">${total}개 방송을 검색했지만 [${esc(targetId)}]를 찾지 못했습니다.</div>`;
+      }
+    }
+  } catch (e) {
+    if (!signal.aborted) log(`오류: ${e.message}`, 'log-err');
+  }
+
+  setScanning(false);
+}
+
+function stopScan() {
+  if (abortCtrl) abortCtrl.abort();
+  log('중지 요청...', 'log-warn');
+}
+
+// Enter 키로 검색
+document.getElementById('targetId').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') startScan();
+});
+</script>
+</body>
+</html>
