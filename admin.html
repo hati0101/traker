@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>키 관리</title>
+<style>
+  :root { --bg: #0f0f1a; --card: #1a1a2e; --border: #2a2a40; --accent: #7fdbca; --danger: #e94560; --text: #eee; --dim: #888; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: '맑은 고딕', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .container { max-width: 700px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 20px; color: var(--accent); margin-bottom: 20px; }
+
+  /* 로그인 */
+  #loginBox { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 32px; text-align: center; margin-top: 60px; }
+  #loginBox h2 { color: var(--accent); margin-bottom: 16px; }
+  #loginBox input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: #0f1a30; color: var(--text); font-size: 16px; text-align: center; width: 160px; letter-spacing: 3px; }
+  #loginBox button { margin-top: 12px; padding: 10px 28px; background: var(--accent); color: #111; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; display: block; margin-left: auto; margin-right: auto; }
+  .error { color: var(--danger); font-size: 13px; margin-top: 8px; min-height: 18px; }
+
+  /* 관리 화면 */
+  #adminPanel { display: none; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #16213e; padding: 8px; text-align: left; font-size: 12px; color: var(--dim); border-bottom: 1px solid var(--border); }
+  td { padding: 8px; border-bottom: 1px solid #222; vertical-align: middle; }
+  tr:hover { background: #1e2a4a; }
+  tr.inactive { opacity: 0.4; }
+  tr.expired td { color: #e94560; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+  .badge-active { background: #1b5e20; color: #4eff4e; }
+  .badge-inactive { background: #4a1010; color: #e94560; }
+  .badge-expired { background: #4a3010; color: #f5a623; }
+
+  .btn { padding: 5px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+  .btn-toggle { background: #2a4a6a; color: #aad; }
+  .btn-delete { background: #4a1a1a; color: #e94560; }
+  .btn-add { background: var(--accent); color: #111; padding: 8px 20px; font-size: 14px; }
+
+  .add-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .add-row input { padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px; background: #0f1a30; color: var(--text); font-size: 13px; }
+  .add-row input[name="key"] { width: 100px; }
+  .add-row input[name="label"] { width: 100px; }
+  .add-row input[name="expires"] { width: 140px; }
+
+  .msg { text-align: center; padding: 8px; font-size: 13px; min-height: 28px; }
+  .msg-ok { color: #4eff4e; }
+  .msg-err { color: #e94560; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 관리자 로그인 -->
+  <div id="loginBox">
+    <h2>🔑 관리자 인증</h2>
+    <input type="password" id="adminPw" placeholder="관리자 비밀번호" autocomplete="off">
+    <button onclick="adminLogin()">입장</button>
+    <div class="error" id="loginError"></div>
+  </div>
+
+  <!-- 관리 패널 -->
+  <div id="adminPanel">
+    <h1>🔑 비밀번호 관리</h1>
+
+    <!-- 추가 -->
+    <div class="panel">
+      <div class="add-row">
+        <input name="key" id="newKey" placeholder="비밀번호">
+        <input name="label" id="newLabel" placeholder="라벨 (누구)">
+        <input name="expires" id="newExpires" type="date">
+        <button class="btn btn-add" onclick="addKey()">➕ 추가</button>
+      </div>
+      <div class="msg" id="addMsg"></div>
+    </div>
+
+    <!-- 목록 -->
+    <div class="panel">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>비밀번호</th>
+            <th>라벨</th>
+            <th>만료일</th>
+            <th>상태</th>
+            <th>생성일</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="keyList"></tbody>
+      </table>
+      <div class="msg" id="listMsg"></div>
+    </div>
+
+    <div style="text-align:center; margin-top:12px;">
+      <a href="/" style="color:var(--dim); font-size:13px;">← 추적기로 돌아가기</a>
+    </div>
+  </div>
+</div>
+
+<script>
+let adminKey = '';
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+async function api(method, params = {}) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey }
+  };
+
+  let url = '/api/admin/keys';
+  if (method === 'DELETE' && params.id) url += `?id=${params.id}`;
+  if (method === 'POST' || method === 'PUT') opts.body = JSON.stringify(params);
+
+  const resp = await fetch(url, opts);
+  return resp.json();
+}
+
+// ═══ 로그인 ═══
+async function adminLogin() {
+  const pw = document.getElementById('adminPw').value.trim();
+  if (!pw) return;
+
+  adminKey = pw;
+
+  try {
+    const data = await api('GET');
+    if (data.error) {
+      document.getElementById('loginError').textContent = data.error;
+      adminKey = '';
+      return;
+    }
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    renderKeys(data.keys);
+  } catch (e) {
+    document.getElementById('loginError').textContent = '서버 연결 실패';
+  }
+}
+
+document.getElementById('adminPw').addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
+
+// ═══ 목록 렌더링 ═══
+function renderKeys(keys) {
+  const tbody = document.getElementById('keyList');
+  tbody.innerHTML = '';
+
+  keys.forEach(k => {
+    const isExpired = k.expires && new Date(k.expires + 'T23:59:59') < new Date();
+    const tr = document.createElement('tr');
+    if (!k.active) tr.className = 'inactive';
+    else if (isExpired) tr.className = 'expired';
+
+    let badge;
+    if (!k.active) badge = '<span class="badge badge-inactive">비활성</span>';
+    else if (isExpired) badge = '<span class="badge badge-expired">만료</span>';
+    else badge = '<span class="badge badge-active">활성</span>';
+
+    tr.innerHTML = `
+      <td>${k.id}</td>
+      <td><strong>${esc(k.key)}</strong></td>
+      <td>${esc(k.label)}</td>
+      <td>${k.expires || '없음'}</td>
+      <td>${badge}</td>
+      <td style="font-size:11px;color:var(--dim)">${(k.created_at || '').substring(0, 10)}</td>
+      <td>
+        <button class="btn btn-toggle" onclick="toggleKey(${k.id}, ${k.active ? 0 : 1})">${k.active ? '비활성화' : '활성화'}</button>
+        <button class="btn btn-delete" onclick="deleteKey(${k.id}, '${esc(k.key)}')">삭제</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ═══ 추가 ═══
+async function addKey() {
+  const key = document.getElementById('newKey').value.trim();
+  const label = document.getElementById('newLabel').value.trim();
+  const expires = document.getElementById('newExpires').value || null;
+  const msg = document.getElementById('addMsg');
+
+  if (!key) { msg.innerHTML = '<span class="msg-err">비밀번호를 입력하세요</span>'; return; }
+
+  const data = await api('POST', { key, label, expires });
+  if (data.ok) {
+    msg.innerHTML = '<span class="msg-ok">추가 완료!</span>';
+    document.getElementById('newKey').value = '';
+    document.getElementById('newLabel').value = '';
+    document.getElementById('newExpires').value = '';
+    refresh();
+  } else {
+    msg.innerHTML = `<span class="msg-err">${data.error}</span>`;
+  }
+}
+
+// ═══ 활성/비활성 토글 ═══
+async function toggleKey(id, active) {
+  await api('PUT', { id, active: !!active });
+  refresh();
+}
+
+// ═══ 삭제 ═══
+async function deleteKey(id, key) {
+  if (!confirm(`[${key}] 삭제하시겠습니까?`)) return;
+  await api('DELETE', { id });
+  refresh();
+}
+
+// ═══ 새로고침 ═══
+async function refresh() {
+  const data = await api('GET');
+  if (data.keys) renderKeys(data.keys);
+}
+</script>
+</body>
+</html>

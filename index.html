@@ -450,19 +450,34 @@ document.getElementById('targetId').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') startScan();
 });
 
-// ═══ 비밀번호 ═══
-const PW_HASH = '260620';
+// ═══ 비밀번호 (서버 인증) ═══
+async function checkPw() {
+  const input = document.getElementById('pwInput').value.trim();
+  const errEl = document.getElementById('pwError');
+  errEl.textContent = '';
 
-function checkPw() {
-  const input = document.getElementById('pwInput').value;
-  if (input === PW_HASH) {
-    document.getElementById('lockScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    sessionStorage.setItem('authed', '1');
-  } else {
-    document.getElementById('pwError').textContent = '비밀번호가 틀렸습니다.';
-    document.getElementById('pwInput').value = '';
-    document.getElementById('pwInput').focus();
+  if (!input) { errEl.textContent = '비밀번호를 입력해주세요.'; return; }
+
+  try {
+    const resp = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: input })
+    });
+    const data = await resp.json();
+
+    if (data.ok) {
+      document.getElementById('lockScreen').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+      sessionStorage.setItem('authed', '1');
+      sessionStorage.setItem('authLabel', data.label || '');
+    } else {
+      errEl.textContent = data.message || '인증 실패';
+      document.getElementById('pwInput').value = '';
+      document.getElementById('pwInput').focus();
+    }
+  } catch (e) {
+    errEl.textContent = '서버 연결 실패';
   }
 }
 
