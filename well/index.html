@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>웰컴버추얼 데뷔조 정리</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<style>
+  :root{
+    --bg:#0e1014; --panel:#161922; --panel2:#1c202b;
+    --border:#272c38; --border-soft:#1f2430;
+    --text:#e8eaf0; --muted:#8b90a1; --faint:#5b6273;
+    --accent:#37d3bf; --accent-ink:#052623;
+    --dot-fresh:#37d3bf; --dot-warn:#e8b84b; --dot-stale:#e0607a; --dot-none:#39404f;
+    --violet:#a78bfa; --warn:#e8b84b;
+    --mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg); color:var(--text); font-family:var(--sans);
+    font-size:13.5px; line-height:1.45; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
+  .num{font-variant-numeric:tabular-nums}
+  a{color:var(--accent); text-decoration:none} a:hover{text-decoration:underline}
+  button{font-family:inherit}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px}
+
+  #bar{position:fixed; top:0; left:0; height:2px; width:0%; background:var(--accent);
+    box-shadow:0 0 8px var(--accent); transition:width .18s ease; z-index:50; opacity:0}
+  #bar.on{opacity:1}
+
+  .wrap{max-width:920px; margin:0 auto; padding:22px 20px 60px}
+
+  header.top{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:16px}
+  .brand h1{margin:0; font-size:18px; font-weight:700; letter-spacing:-.01em}
+  .brand p{margin:3px 0 0; color:var(--muted); font-size:12px}
+  .exports{display:flex; gap:6px; flex-wrap:wrap}
+  .btn{background:var(--panel2); color:var(--text); border:1px solid var(--border);
+    padding:7px 12px; border-radius:8px; font-size:12.5px; cursor:pointer; transition:border-color .12s, background .12s}
+  .btn:hover{border-color:#3a4252; background:#20242f}
+  .btn:disabled{opacity:.45; cursor:not-allowed}
+  .btn.primary{background:var(--accent); color:var(--accent-ink); border-color:transparent; font-weight:700}
+  .btn.primary:hover{background:#4adfcc}
+
+  .panel{background:var(--panel); border:1px solid var(--border-soft); border-radius:12px; padding:14px}
+  .panel .label{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+  .panel .label span{font-size:12px; color:var(--muted)}
+  .panel .label .hint{font-size:11px; color:var(--faint)}
+  textarea#ids{width:100%; min-height:78px; resize:vertical; background:var(--bg); color:var(--text);
+    border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-family:var(--mono); font-size:12.5px; line-height:1.7;}
+  textarea#ids::placeholder{color:var(--faint)}
+  .runrow{display:flex; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap}
+  .runrow .status{color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums}
+  .conc{display:flex; align-items:center; gap:6px; color:var(--faint); font-size:11.5px}
+  .conc input{width:52px; background:var(--bg); color:var(--text); border:1px solid var(--border);
+    border-radius:6px; padding:4px 6px; font-family:var(--mono); font-size:12px}
+
+  .toolbar{display:flex; align-items:center; gap:12px; margin:16px 2px 10px; flex-wrap:wrap}
+  #q{flex:1 1 200px; max-width:300px; background:var(--panel); color:var(--text);
+    border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:13px}
+  #q::placeholder{color:var(--faint)}
+  .chips{display:flex; gap:6px; flex-wrap:wrap; margin-left:auto}
+  .chip{font-size:11.5px; color:var(--muted); background:var(--panel); border:1px solid var(--border-soft);
+    padding:5px 9px; border-radius:999px; font-variant-numeric:tabular-nums}
+  .chip b{color:var(--text); font-weight:700}
+  .chip.fresh b{color:var(--dot-fresh)} .chip.warn b{color:var(--dot-warn)}
+  .chip.stale b{color:var(--dot-stale)} .chip.del b{color:var(--dot-stale)}
+
+  .tablewrap{border:1px solid var(--border-soft); border-radius:12px; overflow:hidden; background:var(--panel)}
+  table{width:100%; border-collapse:collapse}
+  thead th{position:sticky; top:0; z-index:2; background:#12151d; text-align:left; font-size:11.5px;
+    font-weight:600; color:var(--muted); padding:10px 12px; border-bottom:1px solid var(--border);
+    white-space:nowrap; cursor:pointer; user-select:none;}
+  thead th.idxh{cursor:default; color:var(--faint); text-align:right; width:38px}
+  thead th.r{text-align:right}
+  thead th .car{color:var(--accent); margin-left:4px; font-size:10px; opacity:0}
+  thead th.sorted .car{opacity:1}
+  tbody td{padding:9px 12px; border-bottom:1px solid var(--border-soft); vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:#191d27}
+  td.idx{color:var(--faint); text-align:right; font-family:var(--mono); font-size:11.5px}
+  td.nick{font-weight:600; letter-spacing:-.005em; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  td.nick a{color:inherit}
+  td.r{text-align:right; font-variant-numeric:tabular-nums}
+  td.dim{color:var(--faint)}
+  .sub{color:var(--faint)}
+
+  .recent{display:inline-flex; align-items:center; gap:8px; white-space:nowrap}
+  .dot{width:7px; height:7px; border-radius:50%; flex:none}
+  .dot.fresh{background:var(--dot-fresh)} .dot.warn{background:var(--dot-warn)}
+  .dot.stale{background:var(--dot-stale)} .dot.none{background:var(--dot-none)}
+
+  .badge{display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.02em;
+    padding:1px 7px; border-radius:999px; border:1px solid var(--border)}
+  .badge.warn{color:var(--dot-warn); border-color:#4a3f24; background:#241f0f}
+  .badge.stale{color:var(--dot-stale); border-color:#4a2b34; background:#251218}
+  .badge.del{color:var(--dot-stale); border-color:#3a2a30; background:#20161a}
+  .badge.er{color:var(--warn); border-color:#4a3f24}
+  tr.bad td.nick{font-weight:600; color:var(--muted)}
+
+  .empty{padding:44px 20px; text-align:center; color:var(--muted)}
+  .empty b{color:var(--text)} .empty code{font-family:var(--mono); color:var(--accent); font-size:12px}
+  footer{margin-top:14px; color:var(--faint); font-size:11.5px; line-height:1.7}
+  footer code{font-family:var(--mono); color:var(--muted)}
+
+  @media (max-width:640px){ thead th.hide-m, td.hide-m{display:none} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <h1>웰컴버추얼 데뷔조 정리</h1>
+      <p>데뷔일 · 아이디 입력 → 애청자 · 팬 · 최근 방송일 정리 (7일↑ 휴방은 D+n · 1달↑ 표시)</p>
+    </div>
+    <div class="exports">
+      <button class="btn" id="copyBtn" disabled>표 복사</button>
+      <button class="btn" id="csvBtn" disabled>CSV</button>
+      <button class="btn" id="jsonBtn" disabled>JSON</button>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="label">
+      <span>입력</span>
+      <span class="hint">한 줄에 한 명 · <b>데뷔일 아이디</b> (예 <code>1/1 hxru2242</code>) · 삭제된 애는 <code>1/2 하뿌。 삭제</code></span>
+    </div>
+    <textarea id="ids" spellcheck="false" placeholder="1/1  hxru2242&#10;1/1  nekolove&#10;1/2  하뿌。  삭제&#10;1/3  nyangstar"></textarea>
+    <div class="runrow">
+      <button class="btn primary" id="loadBtn">불러오기</button>
+      <span class="conc">동시요청 <input id="conc" type="number" min="1" max="16" value="6"></span>
+      <span class="status" id="status"></span>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input id="q" type="search" placeholder="닉네임 검색">
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr id="head">
+          <th class="idxh">#</th>
+          <th data-k="nick">닉네임<span class="car">▼</span></th>
+          <th data-k="fanCnt" class="r">애청자<span class="car">▼</span></th>
+          <th data-k="fanclubCnt" class="r" title="팬클럽 수">팬<span class="car">▼</span></th>
+          <th data-k="debutTs">데뷔일<span class="car">▼</span></th>
+          <th data-k="broadStartTs">최근 방송일<span class="car">▼</span></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none"></div>
+  </div>
+
+  <footer>
+    · 애청자·팬(팬클럽)·최근방송은 조회 시점의 SOOP 공개 대시보드 값입니다.<br>
+    · 최근 방송이 <b>7일 이상</b> 지났으면 <code>D+n일</code>, <b>30일 이상</b>이면 <code>1달이상</code>으로 표기합니다.<br>
+    · <code>삭제</code>로 표시했거나 API가 404를 주는 아이디는 <code>방송국 삭제</code>로 정리합니다. 데뷔일은 입력값을 그대로 씁니다.
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* 조회 완료된 상태의 시드 (미리보기에서 네트워크가 막혀도 표가 보이도록) */
+const SEED = [
+  {"debut": "1/1", "id": "hxru2242", "nick": "서무무", "status": "ok", "fanCnt": 1031, "fanclubCnt": 496, "broadStart": "2026-06-30 18:59:32"},
+  {"debut": "1/1", "id": "nekolove", "nick": "서냥이", "status": "ok", "fanCnt": 994, "fanclubCnt": 530, "broadStart": "2026-06-29 20:32:32"},
+  {"debut": "1/2", "id": "", "nick": "하뿌。", "status": "deleted"},
+  {"debut": "1/3", "id": "nyangstar", "nick": "양냥이", "status": "ok", "fanCnt": 638, "fanclubCnt": 231, "broadStart": "2026-06-30 19:00:38"},
+  {"debut": "1/3", "id": "ad8hv5jk7d6", "nick": "송민트··", "status": "ok", "fanCnt": 543, "fanclubCnt": 403, "broadStart": "2026-07-01 10:34:19"},
+  {"debut": "1/6", "id": "hammojji", "nick": "햄모찌♡", "status": "ok", "fanCnt": 494, "fanclubCnt": 498, "broadStart": "2026-06-30 14:14:01"},
+  {"debut": "1/10", "id": "vcheong", "nick": "코이ㆍ", "status": "ok", "fanCnt": 5663, "fanclubCnt": 1805, "broadStart": "2026-07-01 10:01:09"},
+  {"debut": "1/10", "id": "hanoong", "nick": "하눙씌", "status": "ok", "fanCnt": 306, "fanclubCnt": 159, "broadStart": "2026-06-30 21:00:41"},
+  {"debut": "1/11", "id": "mitte808", "nick": "미떼!", "status": "ok", "fanCnt": 669, "fanclubCnt": 159, "broadStart": "2026-06-30 19:01:20"},
+  {"debut": "1/12", "id": "kalswn9500", "nick": "주야♪", "status": "ok", "fanCnt": 1099, "fanclubCnt": 252, "broadStart": "2026-04-02 22:36:37"},
+  {"debut": "1/13", "id": "nam2bird", "nick": "버드_♥", "status": "ok", "fanCnt": 3744, "fanclubCnt": 526, "broadStart": "2026-06-23 22:38:24"},
+  {"debut": "1/13", "id": "kimghdus", "nick": "모아?", "status": "ok", "fanCnt": 1129, "fanclubCnt": 931, "broadStart": "2026-07-01 12:30:37"},
+  {"debut": "1/14", "id": "ueeeeeee81", "nick": "u유에e", "status": "ok", "fanCnt": 604, "fanclubCnt": 280, "broadStart": "2026-06-27 19:29:50"},
+  {"debut": "1/14", "id": "jihan110", "nick": "이지한!", "status": "ok", "fanCnt": 2974, "fanclubCnt": 1110, "broadStart": "2026-06-24 16:59:48"},
+  {"debut": "1/17", "id": "temii0229", "nick": "테미★", "status": "ok", "fanCnt": 226, "fanclubCnt": 129, "broadStart": "2026-06-30 15:34:48"},
+  {"debut": "1/17", "id": "s2mariel", "nick": "마리엘", "status": "ok", "fanCnt": 1509, "fanclubCnt": 506, "broadStart": "2026-06-23 20:07:13"},
+  {"debut": "1/17", "id": "nyaming0505", "nick": "냐밍_", "status": "ok", "fanCnt": 723, "fanclubCnt": 362, "broadStart": "2026-06-30 04:30:37"},
+  {"debut": "1/21", "id": "newro9", "nick": "예냥_", "status": "ok", "fanCnt": 132, "fanclubCnt": 70, "broadStart": "2026-03-31 21:03:04"},
+  {"debut": "1/23", "id": "harin7373", "nick": "슈아♥", "status": "ok", "fanCnt": 593, "fanclubCnt": 385, "broadStart": "2026-06-30 09:28:09"},
+  {"debut": "1/24", "id": "", "nick": "유비,", "status": "deleted"},
+  {"debut": "1/24", "id": "popo030", "nick": "탱자ω", "status": "ok", "fanCnt": 1430, "fanclubCnt": 560, "broadStart": "2026-06-30 16:29:34"},
+  {"debut": "1/24", "id": "nyanya66", "nick": "냔냐_", "status": "ok", "fanCnt": 1732, "fanclubCnt": 441, "broadStart": "2026-06-30 19:00:42"},
+  {"debut": "1/24", "id": "congna", "nick": "콩나", "status": "ok", "fanCnt": 1070, "fanclubCnt": 501, "broadStart": "2026-07-01 00:32:53"},
+  {"debut": "1/25", "id": "naturexx1", "nick": "자연.", "status": "ok", "fanCnt": 1004, "fanclubCnt": 371, "broadStart": "2026-06-30 21:59:38"},
+  {"debut": "1/25", "id": "", "nick": "둥찌", "status": "deleted"},
+  {"debut": "1/28", "id": "dasom52", "nick": "다솜솜", "status": "ok", "fanCnt": 684, "fanclubCnt": 422, "broadStart": "2026-06-28 20:01:29"},
+  {"debut": "1/30", "id": "9umgum", "nick": "단굼", "status": "ok", "fanCnt": 1155, "fanclubCnt": 523, "broadStart": "2026-06-30 20:30:07"},
+  {"debut": "1/30", "id": "ojingeo11", "nick": "연자몽", "status": "ok", "fanCnt": 714, "fanclubCnt": 377, "broadStart": "2026-06-22 19:30:07"},
+  {"debut": "2/7", "id": "kgsibh1121", "nick": "애요", "status": "ok", "fanCnt": 293, "fanclubCnt": 132, "broadStart": "2026-05-28 18:44:01"},
+  {"debut": "2/7", "id": "imleeyo", "nick": "리요", "status": "ok", "fanCnt": 683, "fanclubCnt": 443, "broadStart": "2026-06-30 19:29:11"},
+  {"debut": "2/8", "id": "cherrym0ng", "nick": "체리몽_", "status": "ok", "fanCnt": 762, "fanclubCnt": 277, "broadStart": "2026-06-30 20:00:39"},
+  {"debut": "2/8", "id": "", "nick": "리비:))", "status": "deleted"},
+  {"debut": "2/9", "id": "virtualaon", "nick": "아온AON", "status": "ok", "fanCnt": 18, "fanclubCnt": 5, "broadStart": "2026-02-11 18:04:46"},
+  {"debut": "2/9", "id": "lie429", "nick": "라이쮸♡", "status": "ok", "fanCnt": 280, "fanclubCnt": 269, "broadStart": "2026-06-30 20:00:33"},
+  {"debut": "2/11", "id": "rakuni", "nick": "라쿠니ㆍ", "status": "ok", "fanCnt": 507, "fanclubCnt": 351, "broadStart": "2026-06-30 10:57:23"},
+  {"debut": "2/13", "id": "endntl", "nick": "두우시", "status": "ok", "fanCnt": 42, "fanclubCnt": 12, "broadStart": "2026-02-25 22:04:25"},
+  {"debut": "2/14", "id": "ruby0122", "nick": "이브냥♥", "status": "ok", "fanCnt": 1184, "fanclubCnt": 341, "broadStart": "2026-06-30 19:59:30"},
+  {"debut": "2/19", "id": "s970824", "nick": "춘빵이", "status": "ok", "fanCnt": 863, "fanclubCnt": 1031, "broadStart": "2026-06-30 18:02:26"},
+  {"debut": "2/20", "id": "anuanu1014", "nick": "아뉴anu", "status": "ok", "fanCnt": 38, "fanclubCnt": 7, "broadStart": "2026-07-01 00:11:28"},
+  {"debut": "2/21", "id": "blossom2025", "nick": "블로썸", "status": "ok", "fanCnt": 647, "fanclubCnt": 99, "broadStart": "2026-07-01 12:59:52"},
+  {"debut": "2/21", "id": "sauce1234", "nick": "애사비_", "status": "ok", "fanCnt": 1119, "fanclubCnt": 355, "broadStart": "2026-06-30 20:00:30"},
+  {"debut": "2/22", "id": "chohee13", "nick": "초이~", "status": "ok", "fanCnt": 363, "fanclubCnt": 306, "broadStart": "2026-06-28 21:59:08"},
+  {"debut": "2/25", "id": "nemulumomo", "nick": "아쿠°", "status": "ok", "fanCnt": 574, "fanclubCnt": 263, "broadStart": "2026-07-01 00:00:09"},
+  {"debut": "2/25", "id": "ruruaa", "nick": "로잉이", "status": "ok", "fanCnt": 72, "fanclubCnt": 14, "broadStart": "2026-05-09 12:17:45"},
+  {"debut": "2/26", "id": "myohwa1270", "nick": "윤백미_♪", "status": "ok", "fanCnt": 133, "fanclubCnt": 62, "broadStart": "2026-05-24 11:00:31"},
+  {"debut": "2/27", "id": "naranggu99", "nick": "사일_", "status": "ok", "fanCnt": 580, "fanclubCnt": 294, "broadStart": "2026-07-01 06:28:07"},
+  {"debut": "2/27", "id": "z3nuk41n", "nick": "제뉴카인", "status": "ok", "fanCnt": 45, "fanclubCnt": 8, "broadStart": "2026-04-24 19:50:32"},
+  {"debut": "2/28", "id": "chunli2025", "nick": "춘리CHUNLI", "status": "ok", "fanCnt": 558, "fanclubCnt": 90, "broadStart": "2026-06-30 19:59:09"},
+  {"debut": "2/28", "id": "uhoaeng", "nick": "우호앵", "status": "ok", "fanCnt": 400, "fanclubCnt": 119, "broadStart": "2026-05-28 21:00:33"},
+  {"debut": "2/28", "id": "qhelrkem28", "nick": "키르__", "status": "ok", "fanCnt": 383, "fanclubCnt": 180, "broadStart": "2026-06-30 19:00:40"},
+  {"debut": "2/28", "id": "oonel121", "nick": "오넬_", "status": "ok", "fanCnt": 65, "fanclubCnt": 19, "broadStart": "2026-06-28 17:35:58"},
+  {"debut": "2/28", "id": "killyou0202", "nick": "버거퀸♪", "status": "ok", "fanCnt": 472, "fanclubCnt": 98, "broadStart": "2026-06-27 01:01:39"},
+  {"debut": "3/1", "id": "kuraishirie", "nick": "아샤♪", "status": "ok", "fanCnt": 934, "fanclubCnt": 483, "broadStart": "2026-06-29 20:03:36"},
+  {"debut": "3/1", "id": "wedme0108", "nick": "드루미_", "status": "ok", "fanCnt": 64, "fanclubCnt": 13, "broadStart": "2026-05-22 15:59:31"},
+  {"debut": "3/1", "id": "s00pkyo", "nick": "쿄우.", "status": "ok", "fanCnt": 406, "fanclubCnt": 246, "broadStart": "2026-06-30 17:58:22"},
+  {"debut": "3/2", "id": "shfajrxh", "nick": "비뚜리", "status": "ok", "fanCnt": 624, "fanclubCnt": 162, "broadStart": "2026-06-30 18:00:18"},
+  {"debut": "3/2", "id": "happyblossom", "nick": "인루앙", "status": "ok", "fanCnt": 664, "fanclubCnt": 129, "broadStart": "2026-06-30 19:56:40"},
+  {"debut": "3/3", "id": "saeha0511", "nick": "천새하", "status": "ok", "fanCnt": 769, "fanclubCnt": 408, "broadStart": "2026-06-30 20:27:43"},
+  {"debut": "3/3", "id": "lenia428", "nick": "이로나♪", "status": "ok", "fanCnt": 112, "fanclubCnt": 67, "broadStart": "2026-04-21 20:03:30"},
+  {"debut": "3/7", "id": "iru2008", "nick": "♡이루♡", "status": "ok", "fanCnt": 32, "fanclubCnt": 6, "broadStart": "2026-06-28 15:52:59"},
+  {"debut": "3/8", "id": "blldii", "nick": "블디*", "status": "ok", "fanCnt": 352, "fanclubCnt": 145, "broadStart": "2026-06-30 19:29:45"},
+  {"debut": "3/10", "id": "chaeru75", "nick": "채루", "status": "ok", "fanCnt": 669, "fanclubCnt": 379, "broadStart": "2026-07-01 07:01:34"},
+  {"debut": "3/11", "id": "lulururu", "nick": "ruru_루루", "status": "ok", "fanCnt": 30, "fanclubCnt": 8, "broadStart": "2026-03-18 13:59:52"},
+  {"debut": "3/11", "id": "ssoooong99", "nick": "흐르련", "status": "ok", "fanCnt": 349, "fanclubCnt": 120, "broadStart": "2026-06-18 17:36:09"},
+  {"debut": "3/11", "id": "snabee", "nick": "베르델", "status": "ok", "fanCnt": 125, "fanclubCnt": 60, "broadStart": "2026-06-30 20:56:48"},
+  {"debut": "3/11", "id": "ym14370", "nick": "타린!", "status": "ok", "fanCnt": 38, "fanclubCnt": 12, "broadStart": "2026-03-15 18:26:01"},
+  {"debut": "3/15", "id": "kanoz0", "nick": "카노ミ☆", "status": "ok", "fanCnt": 623, "fanclubCnt": 217, "broadStart": "2026-07-01 13:31:47"},
+  {"debut": "3/16", "id": "imjh456", "nick": "야희", "status": "ok", "fanCnt": 207, "fanclubCnt": 115, "broadStart": "2026-05-18 11:58:39"},
+  {"debut": "3/16", "id": "banta251201", "nick": "반타__", "status": "ok", "fanCnt": 555, "fanclubCnt": 235, "broadStart": "2026-07-01 12:56:41"},
+  {"debut": "3/16", "id": "khaea218", "nick": "윤이결", "status": "ok", "fanCnt": 1692, "fanclubCnt": 823, "broadStart": "2026-06-29 21:59:50"},
+  {"debut": "3/19", "id": "ttu0221", "nick": "흠냥b", "status": "ok", "fanCnt": 473, "fanclubCnt": 170, "broadStart": "2026-06-30 11:49:44"},
+  {"debut": "3/20", "id": "biin0728", "nick": "강삐닝", "status": "ok", "fanCnt": 572, "fanclubCnt": 401, "broadStart": "2026-06-30 18:35:13"},
+  {"debut": "3/22", "id": "soraneko", "nick": "소라Sora", "status": "ok", "fanCnt": 630, "fanclubCnt": 327, "broadStart": "2026-06-29 19:00:24"},
+  {"debut": "3/26", "id": "mg5261", "nick": "찌밍♥", "status": "ok", "fanCnt": 584, "fanclubCnt": 387, "broadStart": "2026-07-01 12:06:03"},
+  {"debut": "3/31", "id": "huyuamae", "nick": "빙또-", "status": "ok", "fanCnt": 415, "fanclubCnt": 256, "broadStart": "2026-06-30 07:25:51"},
+  {"debut": "4/1", "id": "biyam3535", "nick": "비얌_", "status": "ok", "fanCnt": 34, "fanclubCnt": 7, "broadStart": "2026-04-02 10:52:59"},
+  {"debut": "4/1", "id": "aksmfskfk", "nick": "루엔!", "status": "ok", "fanCnt": 564, "fanclubCnt": 132, "broadStart": "2026-06-30 20:05:00"},
+  {"debut": "4/3", "id": "nsmfqha2057", "nick": "백세연", "status": "ok", "fanCnt": 470, "fanclubCnt": 344, "broadStart": "2026-06-29 20:00:41"},
+  {"debut": "4/6", "id": "yeonju1209", "nick": "연주홍", "status": "ok", "fanCnt": 692, "fanclubCnt": 160, "broadStart": "2026-06-30 17:55:06"},
+  {"debut": "4/7", "id": "tq2918", "nick": "소댕", "status": "ok", "fanCnt": 1475, "fanclubCnt": 763, "broadStart": "2026-06-30 20:01:25"},
+  {"debut": "4/8", "id": "cjdtkddkfl45", "nick": "샤보_‡", "status": "ok", "fanCnt": 572, "fanclubCnt": 269, "broadStart": "2026-07-01 11:54:36"},
+  {"debut": "4/10", "id": "mi0mi0", "nick": "im미오", "status": "ok", "fanCnt": 8266, "fanclubCnt": 2546, "broadStart": "2026-06-30 13:29:14"},
+  {"debut": "4/10", "id": "nwakdifl1", "nick": "우시시_", "status": "ok", "fanCnt": 631, "fanclubCnt": 188, "broadStart": "2026-06-30 22:42:07"},
+  {"debut": "4/10", "id": "ah2ruu", "nick": "히루", "status": "ok", "fanCnt": 645, "fanclubCnt": 227, "broadStart": "2026-06-30 18:57:06"},
+  {"debut": "4/11", "id": "moowoos2", "nick": "깅무우", "status": "ok", "fanCnt": 521, "fanclubCnt": 324, "broadStart": "2026-06-30 15:50:34"},
+  {"debut": "4/11", "id": "hayodayong", "nick": "하요.", "status": "ok", "fanCnt": 630, "fanclubCnt": 224, "broadStart": "2026-07-01 11:56:16"},
+  {"debut": "4/11", "id": "whitecowyani", "nick": "백소얀", "status": "ok", "fanCnt": 113, "fanclubCnt": 55, "broadStart": "2026-05-02 11:33:37"},
+  {"debut": "4/13", "id": "andrmf", "nick": "김뭉글♥", "status": "ok", "fanCnt": 439, "fanclubCnt": 314, "broadStart": "2026-07-01 11:59:19"},
+  {"debut": "4/13", "id": "", "nick": "김마토", "status": "deleted"},
+  {"debut": "4/15", "id": "tnals6816", "nick": "뀨르챠", "status": "ok", "fanCnt": 340, "fanclubCnt": 163, "broadStart": "2026-06-30 16:04:02"},
+  {"debut": "4/15", "id": "33h2101", "nick": "감초♥", "status": "ok", "fanCnt": 2778, "fanclubCnt": 1789, "broadStart": "2026-06-30 20:02:36"},
+  {"debut": "4/15", "id": "gtonia7163", "nick": "쏭아링♡", "status": "ok", "fanCnt": 162, "fanclubCnt": 81, "broadStart": "2026-06-30 22:33:22"},
+  {"debut": "4/16", "id": "seta0901", "nick": "세타!", "status": "ok", "fanCnt": 273, "fanclubCnt": 89, "broadStart": "2026-07-01 13:58:34"},
+  {"debut": "4/17", "id": "sihands", "nick": "유즈리_시메", "status": "ok", "fanCnt": 101, "fanclubCnt": 58, "broadStart": "2026-05-22 15:51:04"},
+  {"debut": "4/18", "id": "namangba", "nick": "나망바", "status": "ok", "fanCnt": 207, "fanclubCnt": 133, "broadStart": "2026-04-28 19:31:04"},
+  {"debut": "4/20", "id": "bababi", "nick": "바다비。", "status": "ok", "fanCnt": 2266, "fanclubCnt": 435, "broadStart": "2026-05-30 19:18:14"},
+  {"debut": "4/20", "id": "meryvtuber", "nick": "쭈녕잉", "status": "ok", "fanCnt": 1849, "fanclubCnt": 1624, "broadStart": "2026-05-23 19:53:51"},
+  {"debut": "4/22", "id": "amsidl", "nick": "므냐.", "status": "ok", "fanCnt": 79, "fanclubCnt": 21, "broadStart": "2026-05-18 21:37:09"},
+  {"debut": "4/22", "id": "jizi14", "nick": "츠이루", "status": "ok", "fanCnt": 442, "fanclubCnt": 182, "broadStart": "2026-05-21 07:00:06"},
+  {"debut": "4/22", "id": "lisssssss2", "nick": "히리스_", "status": "ok", "fanCnt": 40, "fanclubCnt": 11, "broadStart": "2026-04-30 20:00:06"},
+  {"debut": "4/24", "id": "yrnatv", "nick": "예르나", "status": "ok", "fanCnt": 7065, "fanclubCnt": 2543, "broadStart": "2026-06-30 18:18:26"},
+  {"debut": "4/25", "id": "sydsydvus", "nick": "사쵸_", "status": "ok", "fanCnt": 446, "fanclubCnt": 229, "broadStart": "2026-07-01 13:01:44"},
+  {"debut": "4/28", "id": "rkqwlssus", "nick": "보라찌", "status": "ok", "fanCnt": 158, "fanclubCnt": 131, "broadStart": "2026-06-29 21:00:26"},
+  {"debut": "5/1", "id": "nheeruo3o", "nick": "이희루♡", "status": "ok", "fanCnt": 523, "fanclubCnt": 177, "broadStart": "2026-06-30 17:45:15"},
+  {"debut": "5/1", "id": "ineharu", "nick": "깅하루♡", "status": "ok", "fanCnt": 588, "fanclubCnt": 432, "broadStart": "2026-07-01 14:00:21"},
+  {"debut": "5/1", "id": "heeheer0411", "nick": "도희린♪", "status": "ok", "fanCnt": 830, "fanclubCnt": 390, "broadStart": "2026-07-01 12:29:21"},
+  {"debut": "5/1", "id": "sohasoha", "nick": "소하＊", "status": "ok", "fanCnt": 325, "fanclubCnt": 112, "broadStart": "2026-06-30 18:59:27"},
+  {"debut": "5/4", "id": "qxqc32161", "nick": "_루하", "status": "ok", "fanCnt": 217, "fanclubCnt": 178, "broadStart": "2026-06-30 21:04:42"},
+  {"debut": "5/4", "id": "erubys", "nick": "이루비__", "status": "ok", "fanCnt": 69, "fanclubCnt": 35, "broadStart": "2026-06-30 13:00:18"},
+  {"debut": "5/5", "id": "mgoldle", "nick": "금래.", "status": "ok", "fanCnt": 811, "fanclubCnt": 494, "broadStart": "2026-07-01 10:01:29"},
+  {"debut": "5/6", "id": "mellymelly", "nick": "치코♪", "status": "ok", "fanCnt": 1257, "fanclubCnt": 772, "broadStart": "2026-06-26 22:32:30"},
+  {"debut": "5/7", "id": "wo0o0ow", "nick": "희호", "status": "ok", "fanCnt": 418, "fanclubCnt": 258, "broadStart": "2026-07-01 11:59:53"},
+  {"debut": "5/8", "id": "airutheneko", "nick": "뮤서아", "status": "ok", "fanCnt": 246, "fanclubCnt": 90, "broadStart": "2026-07-01 13:52:39"},
+  {"debut": "5/9", "id": "been11060", "nick": "오구", "status": "ok", "fanCnt": 1338, "fanclubCnt": 376, "broadStart": "2026-07-01 09:59:50"},
+  {"debut": "5/9", "id": "cyl0912", "nick": "사모_", "status": "ok", "fanCnt": 577, "fanclubCnt": 175, "broadStart": "2026-06-10 20:39:31"},
+  {"debut": "5/9", "id": "lilgochun", "nick": "고춘자↗", "status": "ok", "fanCnt": 298, "fanclubCnt": 198, "broadStart": "2026-06-30 19:00:05"},
+  {"debut": "5/10", "id": "stella1001", "nick": "소려진", "status": "ok", "fanCnt": 161, "fanclubCnt": 94, "broadStart": "2026-06-25 18:46:04"},
+  {"debut": "5/11", "id": "lunelue", "nick": "콘치_", "status": "ok", "fanCnt": 442, "fanclubCnt": 223, "broadStart": "2026-06-30 20:00:11"},
+  {"debut": "5/15", "id": "mayyuzu", "nick": "유즈*", "status": "ok", "fanCnt": 198, "fanclubCnt": 144, "broadStart": "2026-06-27 17:00:39"},
+  {"debut": "5/16", "id": "dello0901", "nick": "델로♪", "status": "ok", "fanCnt": 191, "fanclubCnt": 52, "broadStart": "2026-06-30 22:14:22"},
+  {"debut": "5/16", "id": "nyacha", "nick": "냐차_", "status": "ok", "fanCnt": 53, "fanclubCnt": 19, "broadStart": "2026-05-26 12:00:10"},
+  {"debut": "5/16", "id": "esoj001", "nick": "도이지", "status": "ok", "fanCnt": 637, "fanclubCnt": 320, "broadStart": "2026-06-30 18:59:32"},
+  {"debut": "5/16", "id": "mozziko", "nick": "모찌코♡", "status": "ok", "fanCnt": 209, "fanclubCnt": 138, "broadStart": "2026-06-30 21:56:08"},
+  {"debut": "5/16", "id": "saeggung", "nick": "새꿍", "status": "ok", "fanCnt": 136, "fanclubCnt": 103, "broadStart": "2026-06-01 22:24:53"},
+  {"debut": "5/16", "id": "nwoskzm05", "nick": "서현음", "status": "ok", "fanCnt": 691, "fanclubCnt": 239, "broadStart": "2026-06-30 14:59:17"},
+  {"debut": "5/17", "id": "nyanggaring", "nick": "냥애웅", "status": "ok", "fanCnt": 858, "fanclubCnt": 618, "broadStart": "2026-06-30 23:24:10"},
+  {"debut": "5/17", "id": "ros7890", "nick": "히바나♪", "status": "ok", "fanCnt": 203, "fanclubCnt": 191, "broadStart": "2026-06-25 17:55:41"},
+  {"debut": "5/19", "id": "oreo52", "nick": "푸히:p", "status": "ok", "fanCnt": 212, "fanclubCnt": 76, "broadStart": "2026-06-30 19:59:42"},
+  {"debut": "5/21", "id": "candyflossxo", "nick": "히요나_", "status": "ok", "fanCnt": 159, "fanclubCnt": 62, "broadStart": "2026-06-30 19:42:55"},
+  {"debut": "5/22", "id": "honoe1330", "nick": "이치유♥", "status": "ok", "fanCnt": 696, "fanclubCnt": 358, "broadStart": "2026-07-01 12:02:55"},
+  {"debut": "5/23", "id": "qqshid", "nick": "엔비_Envy", "status": "ok", "fanCnt": 412, "fanclubCnt": 186, "broadStart": "2026-06-30 16:59:48"},
+  {"debut": "5/23", "id": "mssluv", "nick": "몽슈슈.", "status": "ok", "fanCnt": 358, "fanclubCnt": 212, "broadStart": "2026-06-30 21:00:52"},
+  {"debut": "5/23", "id": "ghdeia12", "nick": "유네르_", "status": "ok", "fanCnt": 596, "fanclubCnt": 469, "broadStart": "2026-06-17 04:49:39"},
+  {"debut": "5/24", "id": "korin7", "nick": "벨페_Belphe", "status": "ok", "fanCnt": 396, "fanclubCnt": 169, "broadStart": "2026-06-30 08:00:08"},
+  {"debut": "6/1", "id": "hajion", "nick": "하지온", "status": "ok", "fanCnt": 153, "fanclubCnt": 54, "broadStart": "2026-06-29 14:00:55"},
+  {"debut": "6/3", "id": "222t100", "nick": "티백이:)", "status": "ok", "fanCnt": 189, "fanclubCnt": 169, "broadStart": "2026-06-30 21:28:34"},
+  {"debut": "6/3", "id": "mobaxia", "nick": "모바샤", "status": "ok", "fanCnt": 223, "fanclubCnt": 59, "broadStart": "2026-07-01 11:17:32"},
+  {"debut": "6/4", "id": "harevtuber", "nick": "먀로♥", "status": "ok", "fanCnt": 244, "fanclubCnt": 180, "broadStart": "2026-06-29 22:01:28"},
+  {"debut": "6/6", "id": "brightside3", "nick": "연시아", "status": "ok", "fanCnt": 253, "fanclubCnt": 98, "broadStart": "2026-06-24 06:59:16"},
+  {"debut": "6/7", "id": "acfvyywzqcc", "nick": "록록_", "status": "ok", "fanCnt": 520, "fanclubCnt": 190, "broadStart": "2026-07-01 10:01:51"},
+  {"debut": "6/8", "id": "hyeonshy", "nick": "서린º", "status": "ok", "fanCnt": 743, "fanclubCnt": 449, "broadStart": "2026-07-01 11:30:33"},
+  {"debut": "6/9", "id": "jaengee", "nick": "오복이_", "status": "ok", "fanCnt": 124, "fanclubCnt": 46, "broadStart": "2026-06-30 20:57:38"},
+  {"debut": "6/10", "id": "amanemay", "nick": "김메이", "status": "ok", "fanCnt": 299, "fanclubCnt": 61, "broadStart": "2026-07-01 13:58:18"},
+  {"debut": "6/13", "id": "s0ysauce", "nick": "소이소스", "status": "ok", "fanCnt": 138, "fanclubCnt": 26, "broadStart": "2026-06-29 19:00:41"},
+  {"debut": "6/14", "id": "baru25", "nick": "피야악질팬", "status": "ok", "fanCnt": 380, "fanclubCnt": 249, "broadStart": "2026-06-28 12:00:19"},
+  {"debut": "6/16", "id": "100noru", "nick": "백노루", "status": "ok", "fanCnt": 516, "fanclubCnt": 205, "broadStart": "2026-06-30 18:56:22"},
+  {"debut": "6/16", "id": "aodlf14", "nick": "매일이_", "status": "ok", "fanCnt": 147, "fanclubCnt": 108, "broadStart": "2026-06-25 19:43:11"},
+  {"debut": "6/17", "id": "led113", "nick": "양선아", "status": "ok", "fanCnt": 197, "fanclubCnt": 133, "broadStart": "2026-06-30 21:07:34"},
+  {"debut": "6/18", "id": "nhanayuikae", "nick": "카에!", "status": "ok", "fanCnt": 136, "fanclubCnt": 27, "broadStart": "2026-06-28 13:21:28"},
+  {"debut": "6/19", "id": "nananono00", "nick": "나노NANO.", "status": "ok", "fanCnt": 64, "fanclubCnt": 25, "broadStart": "2026-06-30 19:44:48"},
+  {"debut": "6/18", "id": "reya2552", "nick": "레야_", "status": "ok", "fanCnt": 135, "fanclubCnt": 109, "broadStart": "2026-06-20 19:52:08"},
+  {"debut": "6/19", "id": "tikosiznia", "nick": "티코♪", "status": "ok", "fanCnt": 203, "fanclubCnt": 38, "broadStart": "2026-07-01 05:38:43"},
+  {"debut": "6/19", "id": "ruruharu", "nick": "루루♪", "status": "ok", "fanCnt": 168, "fanclubCnt": 38, "broadStart": "2026-07-01 02:34:06"},
+  {"debut": "6/20", "id": "banaseeznia", "nick": "바나♪", "status": "ok", "fanCnt": 184, "fanclubCnt": 43, "broadStart": "2026-07-01 03:53:02"},
+  {"debut": "6/20", "id": "nekonekone", "nick": "네코네♪", "status": "ok", "fanCnt": 230, "fanclubCnt": 41, "broadStart": "2026-06-30 19:55:56"},
+  {"debut": "6/21", "id": "veryveny", "nick": "미묘에", "status": "ok", "fanCnt": 1010, "fanclubCnt": 265, "broadStart": "2026-06-26 00:47:15"},
+  {"debut": "6/21", "id": "rindoring", "nick": "=쥬린=", "status": "ok", "fanCnt": 146, "fanclubCnt": 80, "broadStart": "2026-06-30 17:59:38"},
+  {"debut": "6/23", "id": "gemi160525", "nick": "아야마루", "status": "ok", "fanCnt": 125, "fanclubCnt": 36, "broadStart": "2026-07-01 11:59:03"},
+  {"debut": "6/24", "id": "qwe5sd", "nick": "세루아", "status": "ok", "fanCnt": 98, "fanclubCnt": 100, "broadStart": "2026-06-30 19:56:30"},
+  {"debut": "6/24", "id": "10045959", "nick": "히린", "status": "ok", "fanCnt": 211, "fanclubCnt": 53, "broadStart": "2026-07-01 10:00:18"},
+  {"debut": "6/25", "id": "janwoll", "nick": "o잔월o", "status": "ok", "fanCnt": 138, "fanclubCnt": 37, "broadStart": "2026-07-01 10:58:34"},
+  {"debut": "6/26", "id": "lboxktyboxl", "nick": "새링♡", "status": "ok", "fanCnt": 1388, "fanclubCnt": 1057, "broadStart": "2026-06-30 19:00:32"},
+  {"debut": "6/26", "id": "meia0510", "nick": "메이아", "status": "ok", "fanCnt": 212, "fanclubCnt": 57, "broadStart": "2026-06-30 17:00:14"},
+  {"debut": "6/26", "id": "pocha47", "nick": "포챠__", "status": "ok", "fanCnt": 152, "fanclubCnt": 50, "broadStart": "2026-07-01 08:00:07"},
+  {"debut": "6/27", "id": "charlottex4", "nick": "샤를로트⁴", "status": "ok", "fanCnt": 387, "fanclubCnt": 70, "broadStart": "2026-06-30 20:57:55"},
+  {"debut": "6/27", "id": "hyakupacent", "nick": "햐쿠파센트", "status": "ok", "fanCnt": 203, "fanclubCnt": 30, "broadStart": "2026-06-30 18:30:04"},
+  {"debut": "6/28", "id": "8bibian8", "nick": "비비안♡", "status": "ok", "fanCnt": 177, "fanclubCnt": 52, "broadStart": "2026-06-29 19:00:06"},
+  {"debut": "6/28", "id": "dxxn0r", "nick": "디안+", "status": "ok", "fanCnt": 134, "fanclubCnt": 24, "broadStart": "2026-07-01 00:01:26"},
+  {"debut": "6/30", "id": "xoxoxo4545", "nick": "정다인", "status": "ok", "fanCnt": 304, "fanclubCnt": 50, "broadStart": "2026-06-29 15:54:09"}
+];
+
+let DATA = [];
+let sort = {k:"debutTs", dir:1};   // 기본: 데뷔일 오름차순(로스터 순)
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+/* ── 유틸 ── */
+function toNum(x){ const n=Number(x); return Number.isFinite(n)?n:0; }
+function parseKST(s){
+  if(!s) return null;
+  const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/); if(!m) return null;
+  const t=Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}+09:00`); return Number.isNaN(t)?null:t;
+}
+function parseDebut(s){
+  const m=String(s||"").match(/^(\d{1,2})\/(\d{1,2})$/); if(!m) return null;
+  const t=Date.parse(`2026-${String(m[1]).padStart(2,"0")}-${String(m[2]).padStart(2,"0")}T00:00:00+09:00`);
+  return Number.isNaN(t)?null:t;
+}
+function fmtDebut(s){ const m=String(s||"").match(/^(\d{1,2})\/(\d{1,2})$/); return m?`${+m[1]}/${+m[2]}`:(s||"-"); }
+function fmtDate(s){ const m=String(s||"").match(/^(\d{4})-(\d{2})-(\d{2})/); return m?`${m[1]}.${m[2]}.${m[3]}`:"-"; }
+function daysSince(ts){ return ts==null ? null : Math.floor((Date.now()-ts)/86400000); }
+function nf(n){ return Number(n||0).toLocaleString("ko-KR"); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+
+/* ── 입력 파싱: "데뷔일 아이디 [닉] [삭제]" ── */
+function parseEntries(raw){
+  const out=[], seen=new Set();
+  raw.split(/\r?\n/).forEach(line=>{
+    line=line.trim(); if(!line) return;
+    const toks=line.split(/[\s,\t]+/).filter(Boolean);
+    let debut="", id="", del=false; const rest=[];
+    for(const t of toks){
+      if(!debut && /^\d{1,2}\/\d{1,2}$/.test(t)){ debut=t; continue; }
+      if(/^(방송국|채널|스테이션|station)$/i.test(t)) continue;               // 노이즈
+      if(/삭제|삭튀|삭됨|접음|방접|폭파/.test(t)){ del=true; continue; }        // 삭제 플래그
+      const um=t.match(/sooplive\.co(?:m|\.kr)\/(?:station\/)?([A-Za-z0-9_]+)/i);
+      if(um){ id=um[1]; continue; }
+      if(!id && /^[A-Za-z0-9_]+$/.test(t)){ id=t; continue; }                  // 순수 영숫자 = 아이디
+      rest.push(t);
+    }
+    const nick=rest.join(" ").replace(/^\[|\]$/g,"").trim();
+    if(del || !id){
+      out.push({debut, id:"", nick: nick || id || "(이름없음)", status:"deleted"});
+    }else{
+      const key=id.toLowerCase(); if(seen.has(key)) return; seen.add(key);
+      out.push({debut, id, nick, status:"pending"});
+    }
+  });
+  return out;
+}
+
+/* ── 조회 ── */
+async function fetchOne(id, tries=2){
+  const url=`https://api-channel.sooplive.com/v1.1/channel/${encodeURIComponent(id)}/dashboard`;
+  try{
+    const r=await fetch(url,{headers:{Accept:"application/json"}});
+    if(r.status===404) return {status:"deleted"};                 // 채널 없음 = 삭제
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const d=await r.json(); const s=d.station||{}, u=d.upd||{};
+    return {status:"ok", nick:s.userNick||"", fanCnt:toNum(u.fanCnt),
+            fanclubCnt:toNum(d.fanclubCnt), broadStart:s.broadStart||""};
+  }catch(e){
+    if(tries>1){ await sleep(600); return fetchOne(id,tries-1); }
+    return {status:"error", err:String(e.message||e)};
+  }
+}
+async function runPool(items, conc, onProg){
+  const res=new Array(items.length); let next=0, done=0;
+  async function worker(){ while(true){ const i=next++; if(i>=items.length) break;
+    res[i]=await fetchOne(items[i].id); onProg(++done, items.length); } }
+  await Promise.all(Array.from({length:Math.min(conc,items.length)}, worker));
+  return res;
+}
+function enrich(e){ e.debutTs=parseDebut(e.debut); e.broadStartTs=parseKST(e.broadStart); return e; }
+
+/* ── 렌더 ── */
+function bad(r){ return r.status!=="ok"; }
+function sortData(rows){
+  const {k,dir}=sort; const pushBottom = k!=="debutTs";   // 데뷔일 정렬 땐 삭제행도 제자리
+  return rows.slice().sort((a,b)=>{
+    if(pushBottom){ const ra=bad(a)?1:0, rb=bad(b)?1:0; if(ra!==rb) return ra-rb; }
+    if(k==="nick") return String(a.nick||"").localeCompare(String(b.nick||""),"ko")*dir;
+    let va=a[k], vb=b[k]; va=(va==null)?-Infinity:va; vb=(vb==null)?-Infinity:vb;
+    if(va<vb) return -1*dir; if(va>vb) return 1*dir; return 0;
+  });
+}
+function recentCell(r){
+  if(r.broadStartTs==null) return `<span class="sub">-</span>`;
+  const days=daysSince(r.broadStartTs);
+  const dot = days>=30?"stale":days>=7?"warn":"fresh";
+  let tag="";
+  if(days>=30) tag=` <span class="badge stale">1달이상</span>`;
+  else if(days>=7) tag=` <span class="badge warn">D+${days}일</span>`;
+  return `<span class="recent" title="${esc(r.broadStart)}"><span class="dot ${dot}"></span><span class="num">${fmtDate(r.broadStart)}</span>${tag}</span>`;
+}
+function render(){
+  const q=$("#q").value.trim().toLowerCase();
+  let rows=DATA;
+  if(q) rows=rows.filter(r=>(r.nick||"").toLowerCase().includes(q)||(r.id||"").toLowerCase().includes(q));
+  rows=sortData(rows);
+
+  const tb=$("#rows"), empty=$("#empty"); tb.innerHTML="";
+  if(DATA.length===0){ empty.style.display="block";
+    empty.innerHTML=`위에 <b>데뷔일 아이디</b>를 붙여넣고 <b>불러오기</b>를 누르세요. 예: <code>1/1 hxru2242</code>`;
+    updateChips(); return; }
+  empty.style.display = rows.length ? "none" : "block";
+  if(!rows.length) empty.innerHTML=`검색 결과 없음`;
+
+  const frag=document.createDocumentFragment();
+  rows.forEach((r,i)=>{
+    const tr=document.createElement("tr"); if(bad(r)) tr.className="bad";
+    const nickCell = r.id
+      ? `<a href="https://www.sooplive.com/station/${esc(r.id)}" target="_blank" rel="noopener">${esc(r.nick)}</a>`
+      : esc(r.nick);
+    if(r.status==="ok"){
+      tr.innerHTML=`
+        <td class="idx">${i+1}</td>
+        <td class="nick">${nickCell}</td>
+        <td class="r"><span class="num">${nf(r.fanCnt)}</span></td>
+        <td class="r"><span class="num">${nf(r.fanclubCnt)}</span></td>
+        <td>${fmtDebut(r.debut)}</td>
+        <td>${recentCell(r)}</td>`;
+    }else{
+      const badge = r.status==="error"
+        ? `<span class="badge er" title="${esc(r.err||"")}">오류</span>`
+        : `<span class="badge del">방송국 삭제</span>`;
+      tr.innerHTML=`
+        <td class="idx">${i+1}</td>
+        <td class="nick">${nickCell}</td>
+        <td class="r dim">—</td>
+        <td class="r dim">—</td>
+        <td>${fmtDebut(r.debut)}</td>
+        <td>${badge}</td>`;
+    }
+    frag.appendChild(tr);
+  });
+  tb.appendChild(frag);
+  paintHead(); updateChips();
+}
+function updateChips(){
+  const c=$("#chips"); if(DATA.length===0){ c.innerHTML=""; return; }
+  const ok=DATA.filter(r=>r.status==="ok");
+  const within=(lo,hi)=>ok.filter(r=>{const d=daysSince(r.broadStartTs); return d!=null&&d>=lo&&d<hi;}).length;
+  const fresh=within(0,7), warn=within(7,30);
+  const mo=ok.filter(r=>{const d=daysSince(r.broadStartTs); return d!=null&&d>=30;}).length;
+  const del=DATA.filter(r=>r.status==="deleted").length;
+  const er=DATA.filter(r=>r.status==="error").length;
+  c.innerHTML=
+    `<span class="chip">총 <b>${DATA.length}</b></span>`+
+    `<span class="chip fresh">최근 7일 <b>${fresh}</b></span>`+
+    (warn?`<span class="chip warn">D+7~29 <b>${warn}</b></span>`:"")+
+    (mo?`<span class="chip stale">1달이상 <b>${mo}</b></span>`:"")+
+    (del?`<span class="chip del">방송국 삭제 <b>${del}</b></span>`:"")+
+    (er?`<span class="chip del">오류 <b>${er}</b></span>`:"");
+}
+function paintHead(){
+  document.querySelectorAll("#head th[data-k]").forEach(th=>{
+    const on=th.dataset.k===sort.k; th.classList.toggle("sorted",on);
+    const car=th.querySelector(".car"); if(car) car.textContent = sort.dir===-1?"▼":"▲";
+  });
+}
+
+/* ── 내보내기 ── */
+function bigo(r){
+  if(r.status==="deleted") return "방송국 삭제";
+  if(r.status==="error") return "오류";
+  const d=daysSince(r.broadStartTs);
+  if(d==null) return ""; if(d>=30) return "1달이상"; if(d>=7) return `D+${d}일`; return "";
+}
+const COLS=[
+  ["닉네임", r=>r.nick],
+  ["애청자", r=>r.status==="ok"?r.fanCnt:""],
+  ["팬",     r=>r.status==="ok"?r.fanclubCnt:""],
+  ["데뷔일", r=>fmtDebut(r.debut)],
+  ["최근방송일", r=>r.status==="ok"?fmtDate(r.broadStart):""],
+  ["비고", bigo],
+  ["아이디", r=>r.id||""]
+];
+function rowVals(r){ return COLS.map(([,f])=>f(r)); }
+function tableText(sep){
+  return [COLS.map(c=>c[0]).join(sep)]
+    .concat(sortData(DATA).map(r=>rowVals(r).map(v=>String(v)).join(sep))).join("\n");
+}
+function csvText(){
+  const q=v=>{v=String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  return "\uFEFF"+[COLS.map(c=>q(c[0])).join(",")]
+    .concat(sortData(DATA).map(r=>rowVals(r).map(q).join(","))).join("\r\n");
+}
+function download(name,text,type){
+  const b=new Blob([text],{type}), u=URL.createObjectURL(b);
+  const a=document.createElement("a"); a.href=u; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u);
+}
+function stamp(){ const d=new Date(),p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`; }
+
+/* ── 이벤트 ── */
+async function load(){
+  const entries=parseEntries($("#ids").value);
+  if(entries.length===0){ $("#status").textContent="입력을 인식하지 못했어요."; return; }
+  const toFetch=entries.filter(e=>e.status==="pending");
+  const bar=$("#bar"); bar.classList.add("on"); bar.style.width="0%";
+  $("#loadBtn").disabled=true;
+  $("#status").textContent = toFetch.length? `조회 중 0/${toFetch.length}` : "정리 중…";
+
+  if(toFetch.length){
+    const res=await runPool(toFetch, Math.max(1,Math.min(16,toNum($("#conc").value)||6)),
+      (done,total)=>{ $("#status").textContent=`조회 중 ${done}/${total}`; bar.style.width=(done/total*100).toFixed(1)+"%"; });
+    toFetch.forEach((e,i)=>{ const x=res[i]||{status:"error"};
+      e.status=x.status;
+      if(x.status==="ok"){ e.nick=x.nick||e.nick; e.fanCnt=x.fanCnt; e.fanclubCnt=x.fanclubCnt; e.broadStart=x.broadStart; }
+      else if(!e.nick) e.nick=e.id;
+    });
+  }
+  DATA=entries.map(enrich);
+  const okN=DATA.filter(r=>r.status==="ok").length, delN=DATA.filter(r=>r.status==="deleted").length;
+  $("#status").textContent=`완료 · ${okN}명 조회${delN?` · 삭제 ${delN}`:""}`;
+  $("#loadBtn").disabled=false;
+  ["copyBtn","csvBtn","jsonBtn"].forEach(id=>$("#"+id).disabled=DATA.length===0);
+  setTimeout(()=>{ bar.classList.remove("on"); bar.style.width="0%"; },500);
+  render();
+}
+document.addEventListener("click",e=>{
+  const th=e.target.closest("#head th[data-k]"); if(!th) return;
+  const k=th.dataset.k;
+  if(sort.k===k) sort.dir*=-1; else sort={k, dir:(k==="fanCnt"||k==="fanclubCnt"||k==="broadStartTs")?-1:1};
+  render();
+});
+$("#loadBtn").addEventListener("click",load);
+$("#q").addEventListener("input",render);
+$("#ids").addEventListener("keydown",e=>{ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) load(); });
+$("#copyBtn").addEventListener("click",async()=>{
+  try{ await navigator.clipboard.writeText(tableText("\t"));
+    $("#copyBtn").textContent="복사됨"; setTimeout(()=>$("#copyBtn").textContent="표 복사",1200); }
+  catch{ download(`welcomevirtual_${stamp()}.tsv`, tableText("\t"), "text/tab-separated-values"); }
+});
+$("#csvBtn").addEventListener("click",()=>download(`welcomevirtual_${stamp()}.csv`, csvText(), "text/csv;charset=utf-8"));
+$("#jsonBtn").addEventListener("click",()=>download(`welcomevirtual_${stamp()}.json`, JSON.stringify(DATA,null,2), "application/json"));
+
+/* ── 초기: 시드 표시 + 입력창 채움 ── */
+$("#ids").value = SEED.map(s=> s.status==="deleted" ? `${s.debut}  ${s.nick}  삭제` : `${s.debut}  ${s.id}`).join("\n");
+DATA = SEED.map(enrich);
+["copyBtn","csvBtn","jsonBtn"].forEach(id=>$("#"+id).disabled=false);
+render();
+</script>
+</body>
+</html>
