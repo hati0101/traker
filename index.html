@@ -382,40 +382,35 @@ async function t1_start() {
     // 3) 방송별 스캔 — 한 방송에서 20명 동시 체크
     t1_log(`${broads.length}개 방송에서 ${fanIds.length}명 추적 시작`);
     const total = broads.length; let done = 0, totalFound = 0;
-    const remaining = new Set(fanIds.map(id => id.toLowerCase()));
     const sem = new Semaphore(50);
 
     await Promise.all(broads.map(async b => {
-      if (signal.aborted || remaining.size === 0) return;
+      if (signal.aborted) return;
       await sem.acquire();
-      if (signal.aborted || remaining.size === 0) { sem.release(); return; }
+      if (signal.aborted) { sem.release(); return; }
 
       try {
         const ch = await apiDetail(b.user_id, signal);
         if (!ch || ch.RESULT !== 1 || !ch.CHDOMAIN) return;
 
-        const foundInThis = await scanForMultiple(ch, [...remaining], 12000);
+        const foundInThis = await scanForMultiple(ch, fanIds, 12000);
 
         foundInThis.forEach(fid => {
           const fan = fanMap[fid];
-          if (fan && !fan.found) {
-            fan.found = true;
-            fan.where = `${ch.BJNICK}(${ch.BJID})`;
-            remaining.delete(fid);
-            totalFound++;
-            $('t1_count').textContent = totalFound;
+          if (!fan) return;
+          fan.found = true;
+          fan.count = (fan.count || 0) + 1;
+          totalFound++;
+          $('t1_count').textContent = totalFound;
 
-            // 카드 업데이트
-            const card = $(`fc_${fan.idx}`);
-            if (card) { card.className = 'fan-card found'; }
-            const status = $(`fs_${fan.idx}`);
-            if (status) status.innerHTML = `✅ ${esc(ch.BJNICK)}`;
+          const card = $(`fc_${fan.idx}`);
+          if (card) card.className = 'fan-card found';
+          const status = $(`fs_${fan.idx}`);
+          if (status) status.innerHTML = `✅ ${fan.count}개 방송`;
 
-            // 결과 추가
-            $('t1_results').innerHTML += `<div class="result-card"><span class="rc-nick">${esc(fan.userNick)}</span><span class="rc-id">${esc(fan.userId)}</span><span class="rc-title">→ ${esc(ch.BJNICK)} — ${esc(ch.TITLE)}</span><span class="rc-time">${now()}</span></div>`;
+          $('t1_results').innerHTML += `<div class="result-card"><span class="rc-nick">${esc(fan.userNick)}</span><span class="rc-id">${esc(fan.userId)}</span><span class="rc-title">→ ${esc(ch.BJNICK)} — ${esc(ch.TITLE)}</span><span class="rc-time">${now()}</span></div>`;
 
-            t1_log(`  ✅ ${fan.userNick}(${fan.userId}) → ${ch.BJNICK}(${ch.BJID})`, 'log-ok');
-          }
+          t1_log(`  ✅ ${fan.userNick}(${fan.userId}) → ${ch.BJNICK}(${ch.BJID})`, 'log-ok');
         });
 
         if (foundInThis.length === 0) {
