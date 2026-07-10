@@ -3,101 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SOOP 시청자 추적기</title>
+<title>SOOP 추적기</title>
 <style>
   :root { --bg: #0f0f1a; --card: #1a1a2e; --border: #2a2a40; --accent: #7fdbca; --danger: #e94560; --warn: #f5a623; --text: #eee; --dim: #888; --found: #4eff4e; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: '맑은 고딕', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
   .container { max-width: 960px; margin: 0 auto; padding: 16px; }
 
-  h1 { font-size: 22px; color: var(--accent); margin-bottom: 16px; }
-  h1 small { font-size: 12px; color: var(--dim); font-weight: normal; }
+  /* 비밀번호 */
+  #lockScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+  .lock-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 32px 40px; text-align: center; min-width: 320px; }
+  .lock-box h2 { color: var(--accent); margin-bottom: 20px; }
+  .lock-box input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: #0f1a30; color: var(--text); font-size: 18px; text-align: center; width: 180px; letter-spacing: 4px; }
+  .lock-box button { display: block; margin: 16px auto 0; padding: 10px 32px; background: var(--accent); color: #111; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; }
+  .lock-box .error { color: var(--danger); font-size: 13px; margin-top: 10px; min-height: 20px; }
 
+  /* 탭 */
+  .tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid var(--border); }
+  .tab { padding: 10px 24px; cursor: pointer; color: var(--dim); font-size: 15px; font-weight: bold; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* 공통 */
   .panel { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
   .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
   .row:last-child { margin-bottom: 0; }
-
   label { font-size: 13px; color: var(--dim); white-space: nowrap; }
-  input[type="text"], input[type="number"] {
-    padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px;
-    background: #0f1a30; color: var(--text); font-size: 14px;
-  }
-  input[type="text"] { width: 220px; }
+  input[type="number"], input[type="text"] { padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px; background: #0f1a30; color: var(--text); font-size: 14px; }
   input[type="number"] { width: 65px; }
+  input[type="text"] { width: 200px; }
   input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); }
-  input#targetId { font-size: 16px; font-weight: bold; width: 200px; }
-
-  .btn { padding: 8px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; transition: opacity 0.2s; }
-  .btn:hover { opacity: 0.85; }
+  .btn { padding: 7px 16px; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-scan { background: var(--accent); color: #111; font-size: 15px; }
+  .btn-scan { background: var(--accent); color: #111; }
   .btn-stop { background: var(--danger); color: #fff; }
-
   .progress-wrap { height: 24px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-  .progress-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; width: 0%; }
   .progress-text { font-size: 12px; color: var(--dim); min-width: 80px; text-align: right; }
 
-  /* 결과 */
+  /* 결과 카드 */
   .results-header { font-size: 15px; font-weight: bold; margin-bottom: 6px; color: var(--found); }
-  .result-card {
-    background: #122a1a; border: 1px solid #1e4a2e; border-radius: 8px;
-    padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 16px;
-    animation: fadeIn 0.3s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
-  .result-card .bj-name { font-size: 16px; font-weight: bold; color: var(--found); min-width: 120px; }
-  .result-card .bj-id { font-size: 13px; color: var(--dim); min-width: 100px; }
-  .result-card .bj-title { font-size: 13px; color: var(--text); flex: 1; }
-  .result-card .found-time { font-size: 12px; color: var(--dim); }
+  .result-card { background: #122a1a; border: 1px solid #1e4a2e; border-radius: 8px; padding: 10px 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 12px; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; } }
+  .result-card .rc-nick { font-size: 15px; font-weight: bold; color: var(--found); min-width: 100px; }
+  .result-card .rc-id { font-size: 12px; color: var(--dim); min-width: 90px; }
+  .result-card .rc-title { font-size: 13px; color: var(--text); flex: 1; }
+  .result-card .rc-time { font-size: 11px; color: var(--dim); }
+  .no-result { text-align: center; padding: 24px; color: var(--dim); font-size: 14px; }
 
-  .no-result { text-align: center; padding: 30px; color: var(--dim); font-size: 14px; }
+  /* 팬 리스트 */
+  .fan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .fan-card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .fan-card img { width: 28px; height: 28px; border-radius: 50%; }
+  .fan-card .fan-nick { font-weight: bold; }
+  .fan-card .fan-status { font-size: 11px; margin-left: auto; }
+  .fan-card.found { border-color: var(--found); background: #122a1a; }
+  .fan-card.searching { border-color: var(--warn); }
+  .fan-card.notfound { opacity: 0.5; }
 
   /* 로그 */
   .log-header { font-size: 14px; font-weight: bold; margin: 10px 0 6px; color: var(--accent); display: flex; justify-content: space-between; }
   .log-header button { font-size: 11px; padding: 2px 8px; background: var(--border); border: none; color: var(--dim); border-radius: 3px; cursor: pointer; }
-  #log {
-    background: #0a0a12; border: 1px solid var(--border); border-radius: 6px;
-    padding: 10px; font-family: 'Consolas', monospace; font-size: 11px;
-    height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
-  }
+  .log-box { background: #0a0a12; border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-family: Consolas, monospace; font-size: 11px; height: 200px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
   .log-ok { color: #4eff4e; } .log-warn { color: #f5a623; } .log-err { color: #e94560; } .log-data { color: #a8d8ea; }
-
-  @media (max-width: 768px) {
-    input#targetId { width: 160px; }
-    .result-card { flex-wrap: wrap; gap: 6px; }
-    #log { height: 160px; }
-  }
-
-  /* 비밀번호 화면 */
-  #lockScreen {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--bg); display: flex; align-items: center; justify-content: center;
-    z-index: 9999;
-  }
-  .lock-box {
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 32px 40px; text-align: center; min-width: 320px;
-  }
-  .lock-box h2 { color: var(--accent); margin-bottom: 20px; font-size: 20px; }
-  .lock-box input {
-    padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px;
-    background: #0f1a30; color: var(--text); font-size: 18px; text-align: center;
-    width: 180px; letter-spacing: 4px;
-  }
-  .lock-box button {
-    display: block; margin: 16px auto 0; padding: 10px 32px;
-    background: var(--accent); color: #111; border: none; border-radius: 6px;
-    font-size: 15px; font-weight: bold; cursor: pointer;
-  }
-  .lock-box .error { color: var(--danger); font-size: 13px; margin-top: 10px; min-height: 20px; }
 </style>
 </head>
 <body>
-<!-- 비밀번호 화면 -->
+
+<!-- 비밀번호 -->
 <div id="lockScreen">
   <div class="lock-box">
-    <h2>🔒 SOOP 시청자 추적기</h2>
+    <h2>🔒 SOOP 추적기</h2>
     <input type="password" id="pwInput" placeholder="비밀번호" maxlength="10" autocomplete="off">
     <button onclick="checkPw()">입장</button>
     <div class="error" id="pwError"></div>
@@ -105,393 +84,383 @@
 </div>
 
 <div class="container" id="mainApp" style="display:none">
-  <h1>🔍 SOOP 시청자 추적기 <small>어느 방에 있을까?</small></h1>
 
-  <!-- 검색 설정 -->
-  <div class="panel">
-    <div class="row">
-      <label>시청자 아이디:</label>
-      <input type="text" id="targetId" placeholder="검색할 아이디">
-      <button class="btn btn-scan" id="btnScan" onclick="startScan()">🔍 검색</button>
-      <button class="btn btn-stop" id="btnStop" onclick="stopScan()" disabled>⏹ 중지</button>
+  <!-- 탭 헤더 -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(0)">🔍 시청자 추적기</div>
+    <div class="tab" onclick="switchTab(1)">👥 열혈팬 추적기</div>
+  </div>
+
+  <!-- ═══ 탭1: 시청자 추적기 ═══ -->
+  <div class="tab-content active" id="tab0">
+    <div class="panel">
+      <div class="row">
+        <label>시청자 아이디:</label>
+        <input type="text" id="t0_targetId" placeholder="검색할 아이디">
+        <button class="btn btn-scan" id="t0_btnScan" onclick="t0_start()">🔍 검색</button>
+        <button class="btn btn-stop" id="t0_btnStop" onclick="t0_stop()" disabled>⏹ 중지</button>
+      </div>
+      <div class="row">
+        <input type="checkbox" id="t0_chkVirtual" checked><label for="t0_chkVirtual">버추얼 필터</label>
+        <span style="margin-left:12px"></span>
+        <label>시청자 수:</label>
+        <input type="number" id="t0_vMin" value="0" min="0" style="width:60px">
+        <label>~</label>
+        <input type="number" id="t0_vMax" value="0" min="0" style="width:60px">
+        <label style="font-size:11px;color:var(--dim)">(0=무제한)</label>
+      </div>
     </div>
-    <div class="row">
-      <input type="checkbox" id="chkVirtual" checked>
-      <label for="chkVirtual">버추얼 태그 필터</label>
-
-      <span style="margin-left:16px"></span>
-      <label>시청자 수:</label>
-      <input type="number" id="viewerMin" value="0" min="0">
-      <label>~</label>
-      <input type="number" id="viewerMax" value="0" min="0">
-      <label style="font-size:11px;color:var(--dim)">(0=제한없음)</label>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="t0_pFill"></div></div>
+      <span class="progress-text" id="t0_pText">대기 중</span>
     </div>
+    <div class="results-header">✅ 발견: <span id="t0_count">0</span>건</div>
+    <div id="t0_results"><div class="no-result">검색 결과가 여기에 표시됩니다.</div></div>
+    <div class="log-header"><span>로그</span><button onclick="$('t0_log').innerHTML=''">클리어</button></div>
+    <div class="log-box" id="t0_log"></div>
   </div>
 
-  <!-- 진행률 -->
-  <div class="progress-wrap">
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    <span class="progress-text" id="progressText">대기 중</span>
+  <!-- ═══ 탭2: 열혈팬 추적기 ═══ -->
+  <div class="tab-content" id="tab1">
+    <div class="panel">
+      <div class="row">
+        <label>스트리머 아이디:</label>
+        <input type="text" id="t1_bjId" placeholder="열혈팬 조회할 BJ">
+        <button class="btn btn-scan" id="t1_btnScan" onclick="t1_start()">👥 검색</button>
+        <button class="btn btn-stop" id="t1_btnStop" onclick="t1_stop()" disabled>⏹ 중지</button>
+      </div>
+      <div class="row">
+        <input type="checkbox" id="t1_chkVirtual" checked><label for="t1_chkVirtual">버추얼 필터</label>
+        <span style="margin-left:12px"></span>
+        <label>시청자 수:</label>
+        <input type="number" id="t1_vMin" value="0" min="0" style="width:60px">
+        <label>~</label>
+        <input type="number" id="t1_vMax" value="0" min="0" style="width:60px">
+        <label style="font-size:11px;color:var(--dim)">(0=무제한)</label>
+      </div>
+    </div>
+    <div id="t1_fanGrid" class="fan-grid" style="display:none"></div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="t1_pFill"></div></div>
+      <span class="progress-text" id="t1_pText">대기 중</span>
+    </div>
+    <div class="results-header">✅ 발견: <span id="t1_count">0</span>건</div>
+    <div id="t1_results"><div class="no-result">스트리머 아이디를 입력하면 열혈팬 20명이 어디서 방송을 보는지 추적합니다.</div></div>
+    <div class="log-header"><span>로그</span><button onclick="$('t1_log').innerHTML=''">클리어</button></div>
+    <div class="log-box" id="t1_log"></div>
   </div>
 
-  <!-- 결과 -->
-  <div class="results-header">✅ 발견: <span id="foundCount">0</span>건</div>
-  <div id="results"><div class="no-result">검색 결과가 여기에 표시됩니다.</div></div>
-
-  <!-- 로그 -->
-  <div class="log-header">
-    <span>로그</span>
-    <button onclick="document.getElementById('log').innerHTML=''">클리어</button>
-  </div>
-  <div id="log"></div>
 </div>
 
 <script>
-// ═══ 상수 ═══
-const STARTER = "\x1b\t", SEP = "\x0c";
-const VIRTUAL_CATE = "00810000";
-const VIRTUAL_KEYWORDS = ["버추얼", "버츄얼", "vtuber", "vtube", "virtual"];
-const SUFFIX_RE = /\(\d+\)$/;
-
-let scanning = false;
-let abortCtrl = null;
-
 // ═══ 유틸 ═══
-function log(msg, cls = '') {
-  const el = document.getElementById('log');
-  const t = new Date().toLocaleTimeString('ko', { hour12: false });
-  el.innerHTML += `<span class="${cls}">[${t}] ${msg}</span>\n`;
-  el.scrollTop = el.scrollHeight;
-}
-
-function cleanId(raw) { return raw.replace(SUFFIX_RE, '').trim(); }
-
-function setProgress(cur, total) {
-  const pct = total > 0 ? (cur / total * 100) : 0;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressText').textContent = `${cur}/${total}`;
-}
-
-function setScanning(v) {
-  scanning = v;
-  document.getElementById('btnScan').disabled = v;
-  document.getElementById('btnStop').disabled = !v;
-}
+const STARTER = "\x1b\t", SEP = "\x0c";
+const V_CATE = "00810000";
+const V_KW = ["버추얼", "버츄얼", "vtuber", "vtube", "virtual"];
+const SUFFIX_RE = /\(\d+\)$/;
+const $ = id => document.getElementById(id);
+const cleanId = raw => raw.replace(SUFFIX_RE, '').trim();
+const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+const now = () => new Date().toLocaleTimeString('ko', { hour12: false });
 
 function buildPacket(type, payload) {
   const len = new TextEncoder().encode(payload).length;
   return `${STARTER}${type}${String(len).padStart(6, '0')}00${payload}`;
 }
 
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-function addFoundResult(bjNick, bjId, broadTitle) {
-  const container = document.getElementById('results');
-  // 첫 결과면 "검색 결과가 여기에 표시됩니다" 제거
-  if (container.querySelector('.no-result')) container.innerHTML = '';
-
-  const time = new Date().toLocaleTimeString('ko', { hour12: false });
-  const card = document.createElement('div');
-  card.className = 'result-card';
-  card.innerHTML = `
-    <span class="bj-name">${esc(bjNick)}</span>
-    <span class="bj-id">${esc(bjId)}</span>
-    <span class="bj-title">${esc(broadTitle)}</span>
-    <span class="found-time">${time}</span>
-  `;
-  container.appendChild(card);
-
-  const count = container.querySelectorAll('.result-card').length;
-  document.getElementById('foundCount').textContent = count;
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === idx));
 }
 
-// ═══ API 호출 (Workers 프록시) ═══
-async function fetchBroadcasts(page, signal) {
-  const resp = await fetch(`/api/broadcasts?page=${page}`, { signal });
-  const data = await resp.json();
-  return data.broad || [];
+class Semaphore {
+  constructor(max) { this.max = max; this.cur = 0; this.queue = []; }
+  acquire() { return new Promise(r => { if (this.cur < this.max) { this.cur++; r(); } else this.queue.push(r); }); }
+  release() { this.cur--; if (this.queue.length) { this.cur++; this.queue.shift()(); } }
 }
 
-async function fetchDetail(bjId, signal) {
-  const resp = await fetch(`/api/detail?bjid=${bjId}`, { signal });
-  const data = await resp.json();
-  return data.CHANNEL || null;
+// ═══ API ═══
+async function apiBroadcasts(page, signal) {
+  const r = await fetch(`/api/broadcasts?page=${page}`, { signal });
+  const d = await r.json();
+  return d.broad || [];
+}
+async function apiDetail(bjId, signal) {
+  const r = await fetch(`/api/detail?bjid=${bjId}`, { signal });
+  const d = await r.json();
+  return d.CHANNEL || null;
+}
+async function apiTopFans(bjId) {
+  const r = await fetch(`/api/topfans?bjid=${bjId}`);
+  return r.json();
 }
 
-// ═══ WebSocket: 대상 시청자가 이 방송에 있는지 체크 ═══
+// ═══ 방송 목록 + 필터 (공용) ═══
+async function getBroadcasts(useVirtual, vMin, vMax, logFn, signal) {
+  logFn('방송 목록 수집 중...');
+  let all = [];
+  for (let p = 1; p <= 100; p++) {
+    if (signal.aborted) break;
+    try {
+      const b = await apiBroadcasts(p, signal);
+      if (!b.length) break;
+      all.push(...b);
+      if (p % 10 === 0) logFn(`  ${p}페이지 (${all.length}개)`);
+    } catch { if (signal.aborted) break; }
+  }
+  logFn(`총 ${all.length}개 수집`, 'log-ok');
+
+  if (useVirtual) {
+    all = all.filter(b => b.broad_cate_no === V_CATE || (b.hash_tags || []).some(t => V_KW.some(k => t.toLowerCase().includes(k))));
+    logFn(`버추얼 필터 → ${all.length}개`);
+  }
+  if (vMin > 0 || vMax > 0) {
+    all = all.filter(b => { const c = parseInt(b.total_view_cnt) || 0; return (vMin <= 0 || c >= vMin) && (vMax <= 0 || c <= vMax); });
+    logFn(`시청자 필터(${vMin}~${vMax > 0 ? vMax : '∞'}) → ${all.length}개`);
+  }
+  return all;
+}
+
+// ═══ WebSocket: 특정 유저 찾기 ═══
 function scanForViewer(channel, targetId, timeoutMs = 10000) {
-  return new Promise((resolve) => {
-    const port = parseInt(channel.CHPT) + 1;
-    const url = `wss://${channel.CHDOMAIN.toLowerCase()}:${port}/Websocket/${channel.BJID}`;
-
-    let ws, timer, viewerTimer;
-    let resolved = false;
-    let found = false;
-
-    function done() {
-      if (resolved) return;
-      resolved = true;
-      clearTimeout(timer);
-      if (viewerTimer) clearTimeout(viewerTimer);
-      try { ws.close(); } catch {}
-      resolve(found);
-    }
-
-    function foundAndDone() {
-      found = true;
-      done();
-    }
+  return new Promise(resolve => {
+    const url = `wss://${channel.CHDOMAIN.toLowerCase()}:${parseInt(channel.CHPT)+1}/Websocket/${channel.BJID}`;
+    let ws, timer, vTimer, resolved = false, found = false;
+    const done = (f) => { if (resolved) return; resolved = true; found = f || false; clearTimeout(timer); clearTimeout(vTimer); try { ws.close(); } catch {} resolve(found); };
+    const rvt = () => { clearTimeout(vTimer); vTimer = setTimeout(() => done(false), 2000); };
 
     try { ws = new WebSocket(url, 'chat'); } catch { resolve(false); return; }
-
-    timer = setTimeout(done, timeoutMs);
-
-    function resetViewerTimer() {
-      if (viewerTimer) clearTimeout(viewerTimer);
-      viewerTimer = setTimeout(done, 2000);
-    }
-
-    function processPacket(p) {
-      if (!p || p.length < 6) return;
-      const startIdx = p.indexOf(STARTER);
-      if (startIdx < 0) return;
-      const pkt = p.substring(startIdx);
-      if (pkt.length < 6) return;
-      const t = pkt.substring(2, 6);
-
-      if (t === '0001') {
-        ws.send(buildPacket('0002', `${SEP}${channel.CHATNO}${SEP.repeat(5)}`));
-      } else if (t === '0127') {
-        // VIEWER 패킷 — 대상 아이디 매칭
-        const payload = pkt.length > 14 ? pkt.substring(14) : pkt;
-        const parts = payload.split(SEP);
-        for (let i = 1; i < parts.length - 1; i += 2) {
-          const id = parts[i].trim();
-          if (id && cleanId(id).toLowerCase() === targetId.toLowerCase()) {
-            foundAndDone();
-            return;
-          }
-        }
-        resetViewerTimer();
-      } else if (t === '0007') {
-        done();
-      }
-    }
-
-    ws.onopen = () => {
-      ws.send(buildPacket('0001', `${SEP}${SEP}${SEP}16${SEP}`));
-    };
-
-    ws.onerror = done;
-    ws.onclose = done;
-
-    ws.onmessage = (evt) => {
+    timer = setTimeout(() => done(false), timeoutMs);
+    ws.onopen = () => ws.send(buildPacket('0001', `${SEP}${SEP}${SEP}16${SEP}`));
+    ws.onerror = () => done(false);
+    ws.onclose = () => done(false);
+    ws.onmessage = evt => {
       if (resolved) return;
-      if (evt.data instanceof Blob) {
-        const reader = new FileReader();
-        reader.onload = () => processPacket(reader.result);
-        reader.readAsText(evt.data);
-      } else if (evt.data instanceof ArrayBuffer) {
-        processPacket(new TextDecoder().decode(evt.data));
-      } else {
-        processPacket(evt.data);
-      }
+      const handler = p => {
+        const si = p.indexOf(STARTER); if (si < 0) return;
+        const pk = p.substring(si); if (pk.length < 6) return;
+        const t = pk.substring(2, 6);
+        if (t === '0001') ws.send(buildPacket('0002', `${SEP}${channel.CHATNO}${SEP.repeat(5)}`));
+        else if (t === '0127') {
+          const parts = pk.substring(14).split(SEP);
+          for (let i = 1; i < parts.length - 1; i += 2) {
+            if (cleanId(parts[i].trim()).toLowerCase() === targetId.toLowerCase()) { done(true); return; }
+          }
+          rvt();
+        } else if (t === '0007') done(false);
+      };
+      if (evt.data instanceof Blob) { const r = new FileReader(); r.onload = () => handler(r.result); r.readAsText(evt.data); }
+      else handler(typeof evt.data === 'string' ? evt.data : new TextDecoder().decode(evt.data));
     };
   });
 }
 
-// ═══ 세마포어 ═══
-class Semaphore {
-  constructor(max) { this.max = max; this.cur = 0; this.queue = []; }
-  acquire() {
-    return new Promise(resolve => {
-      if (this.cur < this.max) { this.cur++; resolve(); }
-      else this.queue.push(resolve);
-    });
-  }
-  release() {
-    this.cur--;
-    if (this.queue.length > 0) { this.cur++; this.queue.shift()(); }
-  }
+// ═══ WebSocket: 여러 유저 동시 찾기 (열혈팬용) ═══
+function scanForMultiple(channel, targetIds, timeoutMs = 12000) {
+  return new Promise(resolve => {
+    const url = `wss://${channel.CHDOMAIN.toLowerCase()}:${parseInt(channel.CHPT)+1}/Websocket/${channel.BJID}`;
+    const targetSet = new Set(targetIds.map(id => id.toLowerCase()));
+    const foundIds = new Set();
+    let ws, timer, vTimer, resolved = false;
+
+    const done = () => { if (resolved) return; resolved = true; clearTimeout(timer); clearTimeout(vTimer); try { ws.close(); } catch {} resolve([...foundIds]); };
+    const rvt = () => { clearTimeout(vTimer); vTimer = setTimeout(done, 2000); };
+
+    try { ws = new WebSocket(url, 'chat'); } catch { resolve([]); return; }
+    timer = setTimeout(done, timeoutMs);
+    ws.onopen = () => ws.send(buildPacket('0001', `${SEP}${SEP}${SEP}16${SEP}`));
+    ws.onerror = done;
+    ws.onclose = done;
+    ws.onmessage = evt => {
+      if (resolved) return;
+      const handler = p => {
+        const si = p.indexOf(STARTER); if (si < 0) return;
+        const pk = p.substring(si); if (pk.length < 6) return;
+        const t = pk.substring(2, 6);
+        if (t === '0001') ws.send(buildPacket('0002', `${SEP}${channel.CHATNO}${SEP.repeat(5)}`));
+        else if (t === '0127') {
+          const parts = pk.substring(14).split(SEP);
+          for (let i = 1; i < parts.length - 1; i += 2) {
+            const cid = cleanId(parts[i].trim()).toLowerCase();
+            if (targetSet.has(cid)) foundIds.add(cid);
+          }
+          rvt();
+        } else if (t === '0007') done();
+      };
+      if (evt.data instanceof Blob) { const r = new FileReader(); r.onload = () => handler(r.result); r.readAsText(evt.data); }
+      else handler(typeof evt.data === 'string' ? evt.data : new TextDecoder().decode(evt.data));
+    };
+  });
 }
 
-// ═══ 메인 검색 ═══
-async function startScan() {
-  if (scanning) return;
+// ══════════════════════════════════════
+//  탭1: 시청자 추적기
+// ══════════════════════════════════════
+let t0_abort = null;
+function t0_log(m, c = '') { $('t0_log').innerHTML += `<span class="${c}">[${now()}] ${m}</span>\n`; $('t0_log').scrollTop = 9e9; }
 
-  const targetId = document.getElementById('targetId').value.trim();
-  if (!targetId) { alert('시청자 아이디를 입력하세요.'); return; }
+async function t0_start() {
+  const tid = $('t0_targetId').value.trim();
+  if (!tid) { alert('시청자 아이디를 입력하세요.'); return; }
 
-  const useVirtual = document.getElementById('chkVirtual').checked;
-  const viewerMin = parseInt(document.getElementById('viewerMin').value) || 0;
-  const viewerMax = parseInt(document.getElementById('viewerMax').value) || 0;
-  const concurrency = 5;
-
-  setScanning(true);
-  document.getElementById('results').innerHTML = '<div class="no-result">검색 중...</div>';
-  document.getElementById('foundCount').textContent = '0';
-  document.getElementById('log').innerHTML = '';
-  setProgress(0, 0);
-
-  abortCtrl = new AbortController();
-  const signal = abortCtrl.signal;
+  $('t0_btnScan').disabled = true; $('t0_btnStop').disabled = false;
+  $('t0_results').innerHTML = ''; $('t0_count').textContent = '0'; $('t0_log').innerHTML = '';
+  $('t0_pFill').style.width = '0%'; $('t0_pText').textContent = '시작 중...';
+  t0_abort = new AbortController();
+  const signal = t0_abort.signal;
 
   try {
-    // 1) 방송 목록 수집
-    log(`=== [${targetId}] 검색 시작 ===`, 'log-ok');
-    log('방송 목록 수집 중...');
+    t0_log(`=== [${tid}] 검색 시작 ===`, 'log-ok');
+    const broads = await getBroadcasts($('t0_chkVirtual').checked, +$('t0_vMin').value, +$('t0_vMax').value, t0_log, signal);
+    if (!broads.length) { t0_log('대상 방송 없음', 'log-warn'); return; }
 
-    let allBroadcasts = [];
-    for (let page = 1; page <= 100; page++) {
-      if (signal.aborted) break;
-      try {
-        const broads = await fetchBroadcasts(page, signal);
-        if (!broads || broads.length === 0) break;
-        allBroadcasts.push(...broads);
-        if (page % 10 === 0) log(`  ${page}페이지 (누적 ${allBroadcasts.length}개)`);
-      } catch (e) {
-        if (signal.aborted) break;
-      }
-    }
-    log(`총 ${allBroadcasts.length}개 방송 수집`);
+    t0_log(`${broads.length}개 방송 스캔 시작`);
+    const total = broads.length; let done = 0, found = 0;
+    const sem = new Semaphore(50);
 
-    // 2) 버추얼 필터
-    let filtered = allBroadcasts;
-    if (useVirtual) {
-      filtered = allBroadcasts.filter(b =>
-        b.broad_cate_no === VIRTUAL_CATE ||
-        (b.hash_tags || []).some(tag =>
-          VIRTUAL_KEYWORDS.some(kw => tag.toLowerCase().includes(kw))
-        )
-      );
-      log(`버추얼 필터 → ${filtered.length}개`, 'log-data');
-    }
-
-    // 3) 시청자 수 필터
-    if (viewerMin > 0 || viewerMax > 0) {
-      filtered = filtered.filter(b => {
-        const cnt = parseInt(b.total_view_cnt) || 0;
-        return (viewerMin <= 0 || cnt >= viewerMin) && (viewerMax <= 0 || cnt <= viewerMax);
-      });
-      log(`시청자 필터(${viewerMin}~${viewerMax > 0 ? viewerMax : '∞'}) → ${filtered.length}개`, 'log-data');
-    }
-
-    if (filtered.length === 0) {
-      log('대상 방송이 없습니다.', 'log-warn');
-      document.getElementById('results').innerHTML = '<div class="no-result">필터 조건에 맞는 방송이 없습니다.</div>';
-      setScanning(false);
-      return;
-    }
-
-    // 4) 각 방송 스캔
-    log(`${filtered.length}개 방송에서 [${targetId}] 검색 시작...`);
-    const total = filtered.length;
-    let completed = 0;
-    let foundCount = 0;
-    const sem = new Semaphore(concurrency);
-
-    document.getElementById('results').innerHTML = '';
-
-    const tasks = filtered.map(async (broad) => {
+    await Promise.all(broads.map(async b => {
       if (signal.aborted) return;
       await sem.acquire();
       if (signal.aborted) { sem.release(); return; }
-
       try {
-        const bjId = broad.user_id;
-        const detail = await fetchDetail(bjId, signal);
-
-        if (!detail || detail.RESULT !== 1 || !detail.CHDOMAIN) {
-          return;
+        const ch = await apiDetail(b.user_id, signal);
+        if (!ch || ch.RESULT !== 1 || !ch.CHDOMAIN) return;
+        t0_log(`  스캔: ${ch.BJNICK || b.user_id}`, 'log-data');
+        if (await scanForViewer(ch, tid)) {
+          found++;
+          t0_log(`  ✅ 발견! ${ch.BJNICK}(${ch.BJID})`, 'log-ok');
+          const el = $('t0_results');
+          el.innerHTML += `<div class="result-card"><span class="rc-nick">${esc(ch.BJNICK)}</span><span class="rc-id">${esc(ch.BJID)}</span><span class="rc-title">${esc(ch.TITLE)}</span><span class="rc-time">${now()}</span></div>`;
+          $('t0_count').textContent = found;
         }
+      } catch {} finally { done++; $('t0_pFill').style.width = (done/total*100)+'%'; $('t0_pText').textContent = `${done}/${total}`; sem.release(); }
+    }));
 
-        log(`  스캔: ${detail.BJNICK || bjId}`, 'log-data');
-        const found = await scanForViewer(detail, targetId, 10000);
-
-        if (found) {
-          foundCount++;
-          log(`  ✅ 발견! ${detail.BJNICK}(${detail.BJID}) — ${detail.TITLE}`, 'log-ok');
-          addFoundResult(detail.BJNICK || bjId, detail.BJID, detail.TITLE || broad.broad_title || '');
-        }
-      } catch (e) {
-        if (!signal.aborted) log(`  ⚠ ${broad.user_id}: ${e.message}`, 'log-warn');
-      } finally {
-        completed++;
-        setProgress(completed, total);
-        sem.release();
-      }
-    });
-
-    await Promise.all(tasks);
-
-    if (signal.aborted) {
-      log('🛑 검색 중지됨', 'log-warn');
-    } else {
-      log(`=== 완료: ${total}개 스캔, ${foundCount}개 발견 ===`, 'log-ok');
-      if (foundCount === 0) {
-        document.getElementById('results').innerHTML =
-          `<div class="no-result">${total}개 방송을 검색했지만 [${esc(targetId)}]를 찾지 못했습니다.</div>`;
-      }
-    }
-  } catch (e) {
-    if (!signal.aborted) log(`오류: ${e.message}`, 'log-err');
-  }
-
-  setScanning(false);
+    t0_log(signal.aborted ? '🛑 중지됨' : `=== 완료: ${found}개 발견 ===`, signal.aborted ? 'log-warn' : 'log-ok');
+    if (!found && !signal.aborted) $('t0_results').innerHTML = `<div class="no-result">${total}개 방송에서 [${esc(tid)}]를 찾지 못했습니다.</div>`;
+  } catch {} finally { $('t0_btnScan').disabled = false; $('t0_btnStop').disabled = true; }
 }
+function t0_stop() { t0_abort?.abort(); t0_log('중지 요청...', 'log-warn'); }
 
-function stopScan() {
-  if (abortCtrl) abortCtrl.abort();
-  log('중지 요청...', 'log-warn');
-}
+// ══════════════════════════════════════
+//  탭2: 열혈팬 추적기
+// ══════════════════════════════════════
+let t1_abort = null;
+function t1_log(m, c = '') { $('t1_log').innerHTML += `<span class="${c}">[${now()}] ${m}</span>\n`; $('t1_log').scrollTop = 9e9; }
 
-// Enter 키로 검색
-document.getElementById('targetId').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') startScan();
-});
+async function t1_start() {
+  const bjId = $('t1_bjId').value.trim();
+  if (!bjId) { alert('스트리머 아이디를 입력하세요.'); return; }
 
-// ═══ 비밀번호 (서버 인증) ═══
-async function checkPw() {
-  const input = document.getElementById('pwInput').value.trim();
-  const errEl = document.getElementById('pwError');
-  errEl.textContent = '';
-
-  if (!input) { errEl.textContent = '비밀번호를 입력해주세요.'; return; }
+  $('t1_btnScan').disabled = true; $('t1_btnStop').disabled = false;
+  $('t1_results').innerHTML = ''; $('t1_count').textContent = '0'; $('t1_log').innerHTML = '';
+  $('t1_pFill').style.width = '0%'; $('t1_pText').textContent = '시작 중...';
+  t1_abort = new AbortController();
+  const signal = t1_abort.signal;
 
   try {
-    const resp = await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: input })
+    // 1) 열혈팬 목록
+    t1_log(`=== [${bjId}] 열혈팬 조회 ===`, 'log-ok');
+    const fans = await apiTopFans(bjId);
+    if (!fans || !fans.length) { t1_log('열혈팬 목록이 없습니다.', 'log-warn'); return; }
+    t1_log(`열혈팬 ${fans.length}명 획득`, 'log-ok');
+
+    // 팬 카드 표시
+    const grid = $('t1_fanGrid'); grid.style.display = 'grid'; grid.innerHTML = '';
+    const fanMap = {};
+    fans.forEach((f, i) => {
+      fanMap[f.userId.toLowerCase()] = { ...f, idx: i, found: false, where: '' };
+      grid.innerHTML += `<div class="fan-card searching" id="fc_${i}"><img src="${f.profileImage}" onerror="this.style.display='none'"><span class="fan-nick">${esc(f.userNick)}</span><span class="fan-status" id="fs_${i}">🔍</span></div>`;
     });
-    const data = await resp.json();
 
-    if (data.ok) {
-      document.getElementById('lockScreen').style.display = 'none';
-      document.getElementById('mainApp').style.display = 'block';
-      sessionStorage.setItem('authed', '1');
-      sessionStorage.setItem('authLabel', data.label || '');
-    } else {
-      errEl.textContent = data.message || '인증 실패';
-      document.getElementById('pwInput').value = '';
-      document.getElementById('pwInput').focus();
-    }
-  } catch (e) {
-    errEl.textContent = '서버 연결 실패';
-  }
+    const fanIds = fans.map(f => f.userId);
+
+    // 2) 방송 목록
+    const broads = await getBroadcasts($('t1_chkVirtual').checked, +$('t1_vMin').value, +$('t1_vMax').value, t1_log, signal);
+    if (!broads.length) { t1_log('대상 방송 없음', 'log-warn'); return; }
+
+    // 3) 방송별 스캔 — 한 방송에서 20명 동시 체크
+    t1_log(`${broads.length}개 방송에서 ${fanIds.length}명 추적 시작`);
+    const total = broads.length; let done = 0, totalFound = 0;
+    const remaining = new Set(fanIds.map(id => id.toLowerCase()));
+    const sem = new Semaphore(50);
+
+    await Promise.all(broads.map(async b => {
+      if (signal.aborted || remaining.size === 0) return;
+      await sem.acquire();
+      if (signal.aborted || remaining.size === 0) { sem.release(); return; }
+
+      try {
+        const ch = await apiDetail(b.user_id, signal);
+        if (!ch || ch.RESULT !== 1 || !ch.CHDOMAIN) return;
+
+        const foundInThis = await scanForMultiple(ch, [...remaining], 12000);
+
+        foundInThis.forEach(fid => {
+          const fan = fanMap[fid];
+          if (fan && !fan.found) {
+            fan.found = true;
+            fan.where = `${ch.BJNICK}(${ch.BJID})`;
+            remaining.delete(fid);
+            totalFound++;
+            $('t1_count').textContent = totalFound;
+
+            // 카드 업데이트
+            const card = $(`fc_${fan.idx}`);
+            if (card) { card.className = 'fan-card found'; }
+            const status = $(`fs_${fan.idx}`);
+            if (status) status.innerHTML = `✅ ${esc(ch.BJNICK)}`;
+
+            // 결과 추가
+            $('t1_results').innerHTML += `<div class="result-card"><span class="rc-nick">${esc(fan.userNick)}</span><span class="rc-id">${esc(fan.userId)}</span><span class="rc-title">→ ${esc(ch.BJNICK)} — ${esc(ch.TITLE)}</span><span class="rc-time">${now()}</span></div>`;
+
+            t1_log(`  ✅ ${fan.userNick}(${fan.userId}) → ${ch.BJNICK}(${ch.BJID})`, 'log-ok');
+          }
+        });
+
+        if (foundInThis.length === 0) {
+          // 로그 안 찍음 (너무 많으니)
+        }
+      } catch {} finally {
+        done++;
+        $('t1_pFill').style.width = (done/total*100)+'%';
+        $('t1_pText').textContent = `${done}/${total}`;
+        sem.release();
+      }
+    }));
+
+    // 미발견 팬 표시
+    Object.values(fanMap).forEach(f => {
+      if (!f.found) {
+        const card = $(`fc_${f.idx}`);
+        if (card) card.className = 'fan-card notfound';
+        const status = $(`fs_${f.idx}`);
+        if (status) status.textContent = '—';
+      }
+    });
+
+    t1_log(signal.aborted ? '🛑 중지됨' : `=== 완료: ${totalFound}/${fans.length}명 발견 ===`, signal.aborted ? 'log-warn' : 'log-ok');
+    if (!totalFound && !signal.aborted) $('t1_results').innerHTML = `<div class="no-result">${total}개 방송에서 열혈팬을 찾지 못했습니다.</div>`;
+  } catch (e) { t1_log(`오류: ${e.message}`, 'log-err'); } finally { $('t1_btnScan').disabled = false; $('t1_btnStop').disabled = true; }
 }
+function t1_stop() { t1_abort?.abort(); t1_log('중지 요청...', 'log-warn'); }
 
-// 세션 유지 (새로고침 시 재입력 불필요)
-if (sessionStorage.getItem('authed') === '1') {
-  document.getElementById('lockScreen').style.display = 'none';
-  document.getElementById('mainApp').style.display = 'block';
+// ═══ 비밀번호 ═══
+async function checkPw() {
+  const pw = $('pwInput').value.trim();
+  if (!pw) { $('pwError').textContent = '비밀번호를 입력하세요.'; return; }
+  try {
+    const r = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: pw }) });
+    const d = await r.json();
+    if (d.ok) { $('lockScreen').style.display = 'none'; $('mainApp').style.display = 'block'; sessionStorage.setItem('authed', '1'); }
+    else { $('pwError').textContent = d.message || '인증 실패'; $('pwInput').value = ''; $('pwInput').focus(); }
+  } catch { $('pwError').textContent = '서버 연결 실패'; }
 }
-
-// Enter 키로 입장
-document.getElementById('pwInput').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') checkPw();
-});
-document.getElementById('pwInput').focus();
+if (sessionStorage.getItem('authed') === '1') { $('lockScreen').style.display = 'none'; $('mainApp').style.display = 'block'; }
+$('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkPw(); });
+$('pwInput').focus();
+$('t0_targetId').addEventListener('keydown', e => { if (e.key === 'Enter') t0_start(); });
+$('t1_bjId').addEventListener('keydown', e => { if (e.key === 'Enter') t1_start(); });
 </script>
 </body>
 </html>
