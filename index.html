@@ -316,7 +316,7 @@ async function t0_start() {
 
     t0_log(`${broads.length}개 방송 스캔 시작`);
     const total = broads.length; let done = 0, found = 0;
-    const sem = new Semaphore(100);
+    const sem = new Semaphore(500);
 
     await Promise.all(broads.map(async b => {
       if (signal.aborted) return;
@@ -382,7 +382,7 @@ async function t1_start() {
     // 3) 방송별 스캔 — 한 방송에서 20명 동시 체크
     t1_log(`${broads.length}개 방송에서 ${fanIds.length}명 추적 시작`);
     const total = broads.length; let done = 0, totalFound = 0;
-    const sem = new Semaphore(100);
+    const sem = new Semaphore(500);
 
     await Promise.all(broads.map(async b => {
       if (signal.aborted) return;
