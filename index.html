@@ -63,6 +63,17 @@
   .fan-card.found { border-color: var(--found); background: #122a1a; }
   .fan-card.searching { border-color: var(--warn); }
   .fan-card.notfound { opacity: 0.5; }
+  .fan-card a { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 8px; flex: 1; }
+  .fan-card a:hover .fan-nick { text-decoration: underline; }
+
+  /* 스트리머 정보 */
+  .bj-info { background: var(--card); border: 1px solid var(--accent); border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; }
+  .bj-info img { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent); }
+  .bj-info .bj-detail { flex: 1; }
+  .bj-info .bj-detail .name { font-size: 18px; font-weight: bold; color: var(--accent); }
+  .bj-info .bj-detail .id { font-size: 12px; color: var(--dim); }
+  .bj-info a { color: var(--accent); font-size: 13px; text-decoration: none; border: 1px solid var(--accent); padding: 5px 12px; border-radius: 5px; }
+  .bj-info a:hover { background: var(--accent); color: #111; }
 
   /* 로그 */
   .log-header { font-size: 14px; font-weight: bold; margin: 10px 0 6px; color: var(--accent); display: flex; justify-content: space-between; }
@@ -139,6 +150,7 @@
         <label style="font-size:11px;color:var(--dim)">(0=무제한)</label>
       </div>
     </div>
+    <div id="t1_bjInfo" style="display:none"></div>
     <div id="t1_fanGrid" class="fan-grid" style="display:none"></div>
     <div class="progress-wrap">
       <div class="progress-bar"><div class="progress-fill" id="t1_pFill"></div></div>
@@ -365,12 +377,26 @@ async function t1_start() {
     if (!fans || !fans.length) { t1_log('열혈팬 목록이 없습니다.', 'log-warn'); return; }
     t1_log(`열혈팬 ${fans.length}명 획득`, 'log-ok');
 
-    // 팬 카드 표시
+    // 스트리머 정보 표시
+    const bjInfo = $('t1_bjInfo');
+    const stationUrl = `https://ch.sooplive.co.kr/${bjId}`;
+    const profileImg = `https://profile.img.sooplive.co.kr/LOGO/${bjId}/${bjId}.jpg`;
+    // apiDetail로 닉네임 가져오기
+    let bjNick = bjId;
+    try {
+      const ch = await apiDetail(bjId, signal);
+      if (ch && ch.BJNICK) bjNick = ch.BJNICK;
+    } catch {}
+    bjInfo.style.display = 'block';
+    bjInfo.innerHTML = `<div class="bj-info"><img src="${profileImg}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22><rect fill=%22%231a1a2e%22 width=%2248%22 height=%2248%22/><text x=%2224%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%237fdbca%22 font-size=%2220%22>👤</text></svg>'"><div class="bj-detail"><div class="name">${esc(bjNick)}</div><div class="id">${esc(bjId)}</div></div><a href="${stationUrl}" target="_blank">방송국 →</a></div>`;
+
+    // 팬 카드 표시 (클릭 시 방송국 이동)
     const grid = $('t1_fanGrid'); grid.style.display = 'grid'; grid.innerHTML = '';
     const fanMap = {};
     fans.forEach((f, i) => {
-      fanMap[f.userId.toLowerCase()] = { ...f, idx: i, found: false, where: '' };
-      grid.innerHTML += `<div class="fan-card searching" id="fc_${i}"><img src="${f.profileImage}" onerror="this.style.display='none'"><span class="fan-nick">${esc(f.userNick)}</span><span class="fan-status" id="fs_${i}">🔍</span></div>`;
+      fanMap[f.userId.toLowerCase()] = { ...f, idx: i, found: false, count: 0 };
+      const fanStation = `https://ch.sooplive.co.kr/${f.userId}`;
+      grid.innerHTML += `<div class="fan-card searching" id="fc_${i}"><a href="${fanStation}" target="_blank"><img src="${f.profileImage}" onerror="this.style.display='none'"><span class="fan-nick">${esc(f.userNick)}</span></a><span class="fan-status" id="fs_${i}">🔍</span></div>`;
     });
 
     const fanIds = fans.map(f => f.userId);
