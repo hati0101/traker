@@ -206,6 +206,10 @@ async function apiTopFans(bjId) {
   const r = await fetch(`/api/topfans?bjid=${bjId}`);
   return r.json();
 }
+async function apiStation(bjId) {
+  const r = await fetch(`/api/station?bjid=${bjId}`);
+  return r.json();
+}
 
 // ═══ 방송 목록 + 필터 (공용) ═══
 async function getBroadcasts(useVirtual, vMin, vMax, logFn, signal) {
@@ -377,18 +381,17 @@ async function t1_start() {
     if (!fans || !fans.length) { t1_log('열혈팬 목록이 없습니다.', 'log-warn'); return; }
     t1_log(`열혈팬 ${fans.length}명 획득`, 'log-ok');
 
-    // 스트리머 정보 표시
+    // 스트리머 정보 표시 (station API)
     const bjInfo = $('t1_bjInfo');
     const stationUrl = `https://ch.sooplive.co.kr/${bjId}`;
-    const profileImg = `https://profile.img.sooplive.co.kr/LOGO/${bjId}/${bjId}.jpg`;
-    // apiDetail로 닉네임 가져오기
-    let bjNick = bjId;
+    let bjNick = bjId, profileImg = '';
     try {
-      const ch = await apiDetail(bjId, signal);
-      if (ch && ch.BJNICK) bjNick = ch.BJNICK;
+      const st = await apiStation(bjId);
+      if (st.userNick) bjNick = st.userNick;
+      if (st.profileImage) profileImg = st.profileImage;
     } catch {}
     bjInfo.style.display = 'block';
-    bjInfo.innerHTML = `<div class="bj-info"><img src="${profileImg}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22><rect fill=%22%231a1a2e%22 width=%2248%22 height=%2248%22/><text x=%2224%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%237fdbca%22 font-size=%2220%22>👤</text></svg>'"><div class="bj-detail"><div class="name">${esc(bjNick)}</div><div class="id">${esc(bjId)}</div></div><a href="${stationUrl}" target="_blank">방송국 →</a></div>`;
+    bjInfo.innerHTML = `<div class="bj-info">${profileImg ? `<img src="${profileImg}" onerror="this.style.display='none'">` : ''}<div class="bj-detail"><div class="name">${esc(bjNick)}</div><div class="id">${esc(bjId)}</div></div><a href="${stationUrl}" target="_blank">방송국 →</a></div>`;
 
     // 팬 카드 표시 (클릭 시 방송국 이동)
     const grid = $('t1_fanGrid'); grid.style.display = 'grid'; grid.innerHTML = '';
