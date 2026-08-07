@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>위젯 제작기</title>
+<style>
+:root{
+  --bg:#0f0d14; --panel:#181520; --line:#2c2837; --line2:#3b3548;
+  --tx:#ece7f2; --dim:#8b8399; --accent:#ff7f9c; --ok:#6ee7b7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);min-height:100vh;
+  font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",-apple-system,system-ui,sans-serif;
+  font-size:14px;line-height:1.55}
+header{padding:22px 26px 18px;border-bottom:1px solid var(--line);
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+header h1{font-size:18px;font-weight:700;letter-spacing:-.01em}
+header span{font-size:12px;color:var(--dim)}
+.wrap{display:grid;grid-template-columns:minmax(340px,420px) 1fr;gap:0;align-items:start}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+
+.form{padding:22px 26px 60px;border-right:1px solid var(--line)}
+fieldset{border:0;margin:0 0 22px}
+legend{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  padding-bottom:9px;font-weight:600}
+label{display:block;margin-bottom:13px}
+label>b{display:block;font-size:12px;font-weight:600;color:#b9b1c8;margin-bottom:5px}
+label>b em{font-style:normal;color:var(--dim);font-weight:400}
+input[type=text],input[type=number],select{
+  width:100%;padding:9px 11px;border-radius:8px;background:#0d0b12;
+  border:1px solid var(--line2);color:var(--tx);font:inherit;font-size:13px}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fx{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.grp{font-size:10.5px;letter-spacing:.1em;color:#6f6982;margin:0 0 7px;font-weight:600}
+.fx button{padding:11px 6px;border-radius:9px;background:#0d0b12;border:1px solid var(--line2);
+  color:var(--dim);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;
+  text-align:left;padding-left:11px}
+.fx button:hover{border-color:#554d68;color:#cdc5da}
+.fx button[aria-pressed=true]{background:rgba(255,127,156,.14);border-color:var(--accent);color:#ffd2dd}
+
+.out{padding:22px 26px 60px;position:sticky;top:0}
+.stage{background:
+   linear-gradient(45deg,#1a1722 25%,transparent 25%,transparent 75%,#1a1722 75%),
+   linear-gradient(45deg,#1a1722 25%,#141119 25%,#141119 75%,#1a1722 75%);
+  background-size:18px 18px;background-position:0 0,9px 9px;
+  border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px}
+.stage iframe{width:100%;border:0;display:block;border-radius:8px}
+.bar{display:flex;gap:9px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.btn{padding:9px 15px;border-radius:8px;border:1px solid var(--line2);background:#191623;
+  color:var(--tx);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{border-color:#5b5273}
+.btn.p{background:var(--accent);border-color:var(--accent);color:#2a0d16}
+.btn.p:hover{filter:brightness(1.08)}
+h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  margin:0 0 8px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+textarea{width:100%;padding:12px;border-radius:10px;background:#0d0b12;border:1px solid var(--line2);
+  color:#d9d2e6;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+  line-height:1.6;resize:vertical}
+.note{font-size:12px;color:var(--dim);margin-top:9px;line-height:1.7}
+.note code{background:#0d0b12;padding:1px 5px;border-radius:4px;color:#c0b6d0;font-size:11px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;
+  background:var(--ok);color:#06281d;padding:10px 20px;border-radius:999px;
+  font-size:13px;font-weight:700;pointer-events:none;transition:.25s;z-index:99}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>위젯 제작기</h1>
+  <span>이미지 URL → 임베드 구문. 런타임 1개만 배포하면 끝</span>
+</header>
+
+<div class="wrap">
+<div class="form">
+
+  <fieldset>
+    <legend>런타임 주소</legend>
+    <label><b>배포한 runtime 위치 <em>— 한 번만 설정. Pages는 .html 빼는 게 좋음</em></b>
+      <input type="text" id="base" value="https://nyanya66.pages.dev/runtime"></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>효과 <span style="text-transform:none;letter-spacing:0">19종</span></legend>
+    <div id="fxpick">
+      <p class="grp">긁기 · 문지르기</p>
+      <div class="fx">
+        <button data-fx="scratch" aria-pressed="true">🪙 복권 긁기</button>
+        <button data-fx="frost">❄️ 성에 닦기</button>
+        <button data-fx="dust">🧽 먼지 닦기</button>
+      </div>
+      <p class="grp">셔터 · 촬영</p>
+      <div class="fx">
+        <button data-fx="camera">📷 카메라</button>
+        <button data-fx="polaroid">🖼️ 폴라로이드</button>
+        <button data-fx="film">🎞️ 필름 감기</button>
+      </div>
+      <p class="grp">포장 · 오픈</p>
+      <div class="fx">
+        <button data-fx="gift">🎁 선물상자</button>
+        <button data-fx="gacha">🥚 캡슐토이</button>
+        <button data-fx="parcel">📦 택배 개봉</button>
+        <button data-fx="envelope">💌 편지 봉투</button>
+      </div>
+      <p class="grp">빛 · 커튼</p>
+      <div class="fx">
+        <button data-fx="curtain">🎭 커튼</button>
+        <button data-fx="blind">🪟 블라인드</button>
+        <button data-fx="blackout">🌑 암막 스와이프</button>
+        <button data-fx="unlock">🔓 밀어서 열기</button>
+      </div>
+      <p class="grp">펼침 · 변형</p>
+      <div class="fx">
+        <button data-fx="origami">📄 종이접기</button>
+        <button data-fx="snowglobe">🔮 스노우볼</button>
+        <button data-fx="slot">🎰 슬롯머신</button>
+        <button data-fx="holo">🌈 홀로그램</button>
+        <button data-fx="scan">📡 스캔</button>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>내용</legend>
+    <label><b>이미지 URL <em>— 공개 접근 가능한 https 주소</em></b>
+      <input type="text" id="img" placeholder="https://.../photo.webp"></label>
+    <label data-for="holo"><b>뒷면 이미지 URL <em>— 기울였을 때 나올 두 번째 컷</em></b>
+      <input type="text" id="img2" placeholder="https://.../photo2.webp"></label>
+    <label><b>캡션 제목 <em>— 비우면 안 나옴</em></b>
+      <input type="text" id="title" placeholder="오늘의 방셀 도착 💌"></label>
+    <label><b>캡션 부제</b>
+      <input type="text" id="sub" placeholder="눌러줘서 고마워요"></label>
+    <label><b>안내 문구 <em>— 비우면 효과별 기본값</em></b>
+      <input type="text" id="label" placeholder=""></label>
+    <label data-for="scratch frost dust"><b>커버 이미지 URL <em>— 선택. 비우면 기본 질감</em></b>
+      <input type="text" id="cover" placeholder=""></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>모양</legend>
+    <div class="row">
+      <label><b>카드 비율</b>
+        <select id="ratio">
+          <option value="74/105">74:105 복권</option>
+          <option value="3/4">3:4 세로</option>
+          <option value="2/3">2:3 포토카드</option>
+          <option value="1/1">1:1 정사각</option>
+          <option value="4/3">4:3 가로</option>
+          <option value="16/9">16:9 와이드</option>
+        </select></label>
+      <label><b>이미지 맞춤</b>
+        <select id="fit">
+          <option value="cover">cover — 꽉 채움(잘림)</option>
+          <option value="contain">contain — 전체 보임</option>
+        </select></label>
+    </div>
+    <div class="row">
+      <label><b>포인트 색</b><input type="text" id="accent" value="#ff7f9c"></label>
+      <label><b>모서리 둥글기</b><input type="number" id="radius" value="18" min="0" max="60"></label>
+    </div>
+    <div class="row">
+      <label data-for="camera"><b>시작 흐림 <em>px · 클수록 흐림</em></b>
+        <input type="number" id="blur" value="40" min="0" max="120"></label>
+      <label data-for="scratch frost dust"><b>완료 기준 <em>%</em></b>
+        <input type="number" id="pct" value="52" min="10" max="95"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>임베드</legend>
+    <div class="row">
+      <label><b>임베드 박스 비율</b>
+        <select id="box">
+          <option value="16/9">16:9 — SOOP 기본</option>
+          <option value="4/3">4:3</option>
+          <option value="1/1">1:1</option>
+          <option value="3/4">3:4 세로</option>
+        </select></label>
+      <label><b>최대 폭 <em>px</em></b>
+        <input type="number" id="wmax" value="1000" min="200" max="1600"></label>
+    </div>
+  </fieldset>
+
+</div>
+
+<div class="out">
+  <div class="stage"><iframe id="pv" title="미리보기"></iframe></div>
+
+  <div class="bar">
+    <button class="btn p" id="copyEmbed">임베드 구문 복사</button>
+    <button class="btn" id="copyUrl">위젯 URL만 복사</button>
+    <button class="btn" id="reload">미리보기 다시 재생</button>
+    <button class="btn" id="openNew">새 탭에서 열기</button>
+    <span style="margin-left:auto;font-size:12px;color:var(--dim)">미리보기</span>
+    <button class="btn" id="srcToggle" data-src="remote">배포 주소</button>
+  </div>
+  <p class="note" id="srcNote" style="margin:-8px 0 14px"></p>
+
+  <h2>위젯 URL</h2>
+  <textarea id="url" rows="3" readonly></textarea>
+
+  <h2 style="margin-top:16px">SOOP 게시판 임베드 구문</h2>
+  <textarea id="embed" rows="7" readonly></textarea>
+
+  <p class="note">
+    글쓰기 → <b>HTML 모드</b>로 전환 후 위 구문을 붙여넣으세요.
+    HTML 모드가 없다면 <b>동영상 추가</b> 버튼을 눌러 <b>위젯 URL</b>만 입력해도 됩니다.<br>
+    이미지는 로그인 없이 열리는 주소여야 합니다 — SOOP 게시판에 먼저 올린 뒤
+    이미지 우클릭 → 주소 복사로 <code>*.img.sooplive.com</code> URL을 따오는 게 제일 빠릅니다.
+  </p>
+</div>
+</div>
+
+<div class="toast" id="toast">복사됨</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const F = ['base','img','img2','cover','label','title','sub','ratio','fit','accent','radius','blur','pct','box','wmax'];
+let fx = 'scratch';
+
+/* 효과별 필드 노출 — data-for 목록에 현재 fx가 있을 때만 표시 */
+function syncFields(){
+  document.querySelectorAll('[data-for]').forEach(el =>
+    el.style.display = el.dataset.for.split(' ').includes(fx) ? '' : 'none');
+}
+$('fxpick').addEventListener('click', e => {
+  const b = e.target.closest('button[data-fx]'); if(!b) return;
+  fx = b.dataset.fx;
+  $('fxpick').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x===b));
+  syncFields(); build(true);
+});
+
+function widgetUrl(){
+  const p = new URLSearchParams();
+  p.set('fx', fx);
+  const add = (k, v, def) => { v = String(v ?? '').trim(); if(v && v !== def) p.set(k, v); };
+  add('img',   $('img').value);
+  add('title', $('title').value);
+  add('sub',   $('sub').value);
+  add('label', $('label').value);
+  add('ratio', $('ratio').value, '74/105');
+  add('fit',   $('fit').value, 'cover');
+  add('accent',$('accent').value, '#ff7f9c');
+  add('radius',$('radius').value, '18');
+  if(fx==='holo') add('img2', $('img2').value);
+  if(['scratch','frost','dust'].includes(fx)){ add('cover',$('cover').value); add('pct',$('pct').value,'52'); }
+  if(fx==='camera') add('blur',$('blur').value,'40');
+  const base = $('base').value.trim() || 'runtime.html';
+  return base + '?' + p.toString();
+}
+
+function build(reload){
+  const u = widgetUrl();
+  $('url').value = u;
+  $('embed').value =
+`<div style="width:${$('wmax').value}px;max-width:100%;margin:0 auto 1rem;position:relative;aspect-ratio:${$('box').value};">
+  <iframe src="${u}" width="100%" height="100%" scrolling="no" frameborder="0"
+    style="width:100%;height:100%;border:0;display:block"
+    allow="encrypted-media; accelerometer; gyroscope"></iframe>
+</div>`;
+
+  const src = previewUrl(u);
+  const box = $('box').value.split('/').map(Number);
+  $('pv').style.aspectRatio = box[0] + '/' + box[1];
+  if(reload || $('pv').src !== src) $('pv').src = src;
+}
+
+/* 미리보기 소스: 배포 주소 ↔ 로컬 파일 */
+function previewUrl(u){
+  const q = u.split('?')[1] || '';
+  return $('srcToggle').dataset.src === 'local' ? './runtime.html?' + q : u;
+}
+$('srcToggle').onclick = () => {
+  const b = $('srcToggle');
+  b.dataset.src = b.dataset.src === 'local' ? 'remote' : 'local';
+  b.textContent = b.dataset.src === 'local' ? '로컬 파일' : '배포 주소';
+  $('srcNote').textContent = b.dataset.src === 'local'
+    ? 'runtime.html이 이 파일과 같은 폴더에 있어야 합니다.'
+    : '위에 입력한 런타임 주소를 그대로 불러옵니다. 배포 전이라면 로컬로 전환하세요.';
+  build(true);
+};
+
+let t; F.forEach(id => $(id).addEventListener('input', () => { clearTimeout(t); t = setTimeout(()=>build(false), 260); }));
+$('reload').onclick  = () => build(true);
+$('openNew').onclick = () => window.open(previewUrl(widgetUrl()), '_blank');
+
+function toast(m){ const el=$('toast'); el.textContent=m; el.classList.add('on'); setTimeout(()=>el.classList.remove('on'),1400); }
+async function copy(text, msg){
+  try{ await navigator.clipboard.writeText(text); }catch(_){
+    const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  toast(msg);
+}
+$('copyEmbed').onclick = () => copy($('embed').value, '임베드 구문 복사됨');
+$('copyUrl').onclick   = () => copy($('url').value,   '위젯 URL 복사됨');
+
+$('srcNote').textContent = '위에 입력한 런타임 주소를 그대로 불러옵니다. 배포 전이라면 로컬로 전환하세요.';
+syncFields(); build(true);
+</script>
+</body>
+</html>
