@@ -121,65 +121,74 @@ body{display:flex;align-items:center;justify-content:center;
 .polaroid.done .bar{opacity:0}
 
 /* ─────────── film ─────────── */
-.film{background:#0b0a0e}
-.film .strip{position:absolute;top:9%;bottom:9%;left:0;right:0;z-index:12;display:flex;
-  transition:transform .8s cubic-bezier(.35,.85,.3,1)}
-.film .fr{flex:0 0 100%;height:100%;position:relative;background:#191620;overflow:hidden}
+.film{background:#08070b}
+.film .gate{position:absolute;top:9%;bottom:9%;left:0;right:0;z-index:12;overflow:hidden}
+.film .strip{position:absolute;top:0;bottom:0;left:0;display:flex;will-change:transform}
+.film .fr{flex:0 0 var(--fw,100%);height:100%;position:relative;overflow:hidden;
+  border-right:3px solid #08070b;background:#16121d}
 .film .fr img{width:100%;height:100%;object-fit:cover;display:block}
 .film .fr.blank{background:
-  repeating-linear-gradient(135deg,rgba(255,255,255,.03) 0 14px,transparent 14px 28px),#1a1622}
-.film .fr.blank::after{content:"NEXT ▸";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  color:#5e5470;font-size:12px;letter-spacing:.22em}
-.film .perf{position:absolute;left:0;right:0;height:9%;z-index:14;background:#0b0a0e}
+  radial-gradient(circle at 50% 42%,rgba(255,255,255,.05),transparent 60%),
+  repeating-linear-gradient(115deg,rgba(255,255,255,.028) 0 10px,transparent 10px 22px),#171320}
+.film .fr.blank::after{content:attr(data-n);position:absolute;left:8px;bottom:7px;
+  color:#6c6182;font-size:10px;letter-spacing:.24em}
+.film.busy .gate{animation:gateShake .62s cubic-bezier(.3,.7,.4,1)}
+@keyframes gateShake{0%,100%{transform:translateY(0)}
+  18%{transform:translateY(-2px)}42%{transform:translateY(2px)}68%{transform:translateY(-1px)}}
+.film.busy .strip{filter:blur(1.6px)}
+.film .perf{position:absolute;left:0;right:0;height:9%;z-index:14;background:#08070b;
+  overflow:hidden}
 .film .perf.t{top:0}.film .perf.b{bottom:0}
-.film .perf i{position:absolute;top:50%;width:10px;height:7px;margin-top:-3.5px;border-radius:2px;
-  background:#e9e3f0}
-.film .lever{position:absolute;right:12px;bottom:16%;width:46px;height:46px;z-index:46;
+.film .perf u{position:absolute;left:0;top:50%;display:flex;text-decoration:none;
+  transform:translateY(-50%);will-change:transform}
+.film .perf u i{display:block;width:11px;height:8px;margin-right:13px;border-radius:2px;
+  background:#e9e3f0;flex:0 0 auto}
+.film .lever{position:absolute;right:12px;bottom:15%;width:46px;height:46px;z-index:46;
   border-radius:50%;border:2px solid #7a7091;background:radial-gradient(circle at 38% 32%,#332c40,#1c1826);
   cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.5);
-  transition:transform .7s cubic-bezier(.3,.9,.25,1),opacity .4s}
+  transition:transform .85s cubic-bezier(.25,.85,.3,1),opacity .4s}
 .film .lever::after{content:"";position:absolute;left:50%;top:6px;width:4px;height:16px;
   margin-left:-2px;border-radius:2px;background:var(--accent)}
-.film.busy .lever{transform:rotate(360deg)}
+.film.busy .lever{transform:rotate(1080deg)}
 .film.done .lever{opacity:0;pointer-events:none}
-.film .strip,.film .perf{transition:top .7s ease .35s,bottom .7s ease .35s,opacity .6s ease .35s,
-  transform .8s cubic-bezier(.35,.85,.3,1)}
-.film.done .strip{top:0;bottom:0}
-.film.done .perf{opacity:0}
+.film .counter{position:absolute;right:12px;top:12%;z-index:46;color:#8e83a8;
+  font-size:11px;letter-spacing:.18em;transition:opacity .4s}
+.film.done .counter{opacity:0}
+.film.done .gate{top:0;bottom:0;transition:top .6s ease .25s,bottom .6s ease .25s}
+.film.done .perf{opacity:0;transition:opacity .5s .25s}
 
 /* ─────────── gift ─────────── */
-.gift .base::before{content:"";position:absolute;left:0;right:0;top:0;height:9px;
-  background:linear-gradient(rgba(0,0,0,.42),transparent)}
-.gift .base{position:absolute;left:0;right:0;top:31%;bottom:0;z-index:14;
-  background:linear-gradient(100deg,#c9758f 0 6%,#eeaec2 12%,#e79ab2 55%,#d3839e 88%,#bd6a85);
-  box-shadow:0 -3px 12px rgba(0,0,0,.28) inset;
-  transition:transform .9s ease .12s,opacity .7s ease .22s}
-.gift .lid{position:absolute;left:-2.5%;right:-2.5%;top:0;height:35%;z-index:18;
-  background:linear-gradient(100deg,#d3839e 0 5%,#fbd2df 11%,#f4bccd 52%,#e6a3b9 88%,#cd7b94);
-  border-radius:7px 7px 4px 4px;transform-origin:50% 100%;
-  box-shadow:0 7px 16px rgba(0,0,0,.4),0 2px 0 rgba(255,255,255,.5) inset;
-  transition:transform .85s cubic-bezier(.4,1.4,.5,1),opacity .6s}
-.gift .rib{position:absolute;z-index:19;transition:opacity .55s,transform .75s}
-.gift .rib.v{left:43%;width:14%;top:0;bottom:0;
-  background:linear-gradient(90deg,#e8bd52,#fff6d4 30%,#ffe89b 55%,#e2b243)}
-.gift .rib.h{top:31%;height:12%;left:0;right:0;
-  background:linear-gradient(#fff6d4,#ffe08a 55%,#e2b243)}
-.gift .knot{position:absolute;left:50%;top:31%;width:27%;aspect-ratio:1/1;z-index:20;
-  transform:translate(-50%,-48%);border-radius:50%;cursor:grab;
-  background:radial-gradient(circle at 38% 32%,#fffbe8,#ffdf85 52%,#e0ac35);
-  box-shadow:0 4px 12px rgba(0,0,0,.35),0 -2px 6px rgba(255,255,255,.5) inset;
-  transition:transform .5s,opacity .5s}
-.gift .knot::before,.gift .knot::after{content:"";position:absolute;top:26%;width:46%;height:48%;
-  border-radius:60% 60% 45% 45%;background:linear-gradient(#fff6d4,#f2ce6a 60%,#d9a52f);
-  box-shadow:0 2px 5px rgba(120,80,10,.28)}
-.gift .knot::before{left:-16%;transform:rotate(-24deg)}
-.gift .knot::after{right:-16%;transform:rotate(24deg)}
-.gift.done .lid{transform:translateY(-124%) rotate(-14deg);opacity:0}
-.gift.done .base{transform:translateY(116%);opacity:0}
-.gift.done .rib,.gift.done .knot{opacity:0}
-.gift.done .rib.v{transform:scaleX(2.4)}
-.gift.done .rib.h{transform:scaleY(2.4)}
-.gift.done .knot{transform:translate(-50%,-48%) scale(2.2)}
+.gift{background:#17131c}
+.gift .bg2{position:absolute;inset:0;z-index:13;background:#17131c;
+  transition:opacity .6s ease .25s}
+.gift.done .bg2{opacity:0;transition:opacity .5s ease .05s}
+.gift .base{position:absolute;left:3%;right:3%;top:30%;bottom:4%;z-index:14;overflow:hidden;
+  border-radius:3px 3px 6px 6px;
+  background:linear-gradient(100deg,#b8637f 0 7%,#e79ab2 14%,#f0aec3 46%,#dd8ea8 78%,#b8637f);
+  box-shadow:0 10px 24px rgba(0,0,0,.5);
+  transition:transform .85s cubic-bezier(.5,0,.6,1) .12s,opacity .6s ease .3s}
+.gift .base::before{content:"";position:absolute;left:0;right:0;top:0;height:10px;
+  background:linear-gradient(rgba(0,0,0,.45),transparent)}
+.gift .base .rv{position:absolute;left:42%;width:16%;top:0;bottom:0;
+  background:linear-gradient(90deg,#d9a52f,#fff6d4 32%,#ffe08a 58%,#cf9c28)}
+.gift .lid{position:absolute;left:0;right:0;top:6%;height:26%;z-index:18;overflow:visible;
+  border-radius:5px;transform-origin:50% 100%;
+  background:linear-gradient(100deg,#c9758f 0 6%,#fbd2df 13%,#f7c4d3 48%,#e6a3b9 80%,#c9758f);
+  box-shadow:0 9px 18px rgba(0,0,0,.45),0 2px 0 rgba(255,255,255,.55) inset;
+  transition:transform .9s cubic-bezier(.35,1.3,.5,1),opacity .55s ease .3s}
+.gift .lid::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22%;
+  background:linear-gradient(transparent,rgba(120,50,75,.35))}
+.gift .lid .rv{position:absolute;left:42%;width:16%;top:0;bottom:0;
+  background:linear-gradient(90deg,#d9a52f,#fff6d4 32%,#ffe08a 58%,#cf9c28)}
+.gift .lid .rh{position:absolute;left:0;right:0;top:34%;height:30%;
+  background:linear-gradient(#fff6d4,#ffe08a 55%,#d9a52f)}
+.gift .bow{position:absolute;left:50%;top:28%;width:46%;aspect-ratio:1/.66;z-index:22;
+  transform:translate(-50%,-50%);cursor:grab;
+  transition:transform .5s cubic-bezier(.4,1.4,.5,1)}
+.gift .bow svg{width:100%;height:100%;display:block;
+  filter:drop-shadow(0 3px 5px rgba(90,58,8,.45))}
+.gift.done .lid{transform:translateY(-150%) rotate(-16deg);opacity:0}
+.gift.done .base{transform:translateY(130%);opacity:0}
 
 /* ─────────── gacha ─────────── */
 .gacha .hous{position:absolute;inset:0;z-index:12;
@@ -251,34 +260,50 @@ body{display:flex;align-items:center;justify-content:center;
 .parcel.done .knife{opacity:0}
 
 /* ─────────── envelope ─────────── */
-.envelope{background:#c9a88a}
-.envelope .letter{position:absolute;inset:0;z-index:16;overflow:hidden;background:#fffdf8;
-  transform:translateY(94%);
-  transition:transform 1s cubic-bezier(.3,.95,.3,1) .38s}
+.envelope{background:#191320}
+.envelope .env{position:absolute;left:4%;right:4%;top:12%;bottom:12%;z-index:14;
+  border-radius:5px;background:linear-gradient(160deg,#fbf3e7,#eadcc7);
+  box-shadow:0 16px 34px rgba(0,0,0,.55);transition:opacity .5s,transform .6s}
+.envelope .letter{position:absolute;left:9%;right:9%;top:16%;bottom:16%;z-index:16;
+  overflow:hidden;background:#fffdf8;border-radius:3px;
+  box-shadow:0 10px 22px rgba(0,0,0,.4);transform:translateY(72%);
+  transition:transform .95s cubic-bezier(.3,.95,.3,1) .42s}
 .envelope .letter img{width:100%;height:100%;object-fit:cover;display:block}
-.envelope.done .letter{transform:none;z-index:30}
-.envelope .pocket{position:absolute;inset:0;z-index:18;
-  background:linear-gradient(160deg,#f7eee2,#e9dac6 60%,#dbc9b0);
-  clip-path:polygon(0 0,50% 46%,100% 0,100% 100%,0 100%);
-  box-shadow:0 -4px 16px rgba(120,90,60,.18) inset;transition:opacity .5s .55s}
-.envelope .pocket::after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;
-  background:linear-gradient(200deg,transparent 46%,rgba(160,124,86,.16) 47%,transparent 48%),
-             linear-gradient(-200deg,transparent 46%,rgba(160,124,86,.16) 47%,transparent 48%)}
-.envelope .flapE{position:absolute;left:0;right:0;top:0;height:47%;z-index:19;transform-origin:50% 0;
-  background:linear-gradient(#fbf4ea,#eddfcc 70%,#e0cdb4);
+.envelope.done .letter{transform:translateY(-14%)}
+.envelope.st2 .letter{left:0;right:0;top:0;bottom:0;transform:none;z-index:34;
+  border-radius:var(--radius,18px);
+  transition:left .55s ease,right .55s ease,top .55s ease,bottom .55s ease,
+    transform .55s ease,border-radius .55s ease}
+.envelope .pocket{position:absolute;left:4%;right:4%;top:12%;bottom:12%;z-index:18;
+  border-radius:5px;background:linear-gradient(165deg,#f3e8d8,#e2d0b7 62%,#d3bfa2);
+  clip-path:polygon(0 0,50% 44%,100% 0,100% 100%,0 100%);
+  transition:opacity .5s .35s}
+.envelope .pocket::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(202deg,transparent 45.4%,rgba(150,116,78,.28) 46%,transparent 46.6%),
+             linear-gradient(-202deg,transparent 45.4%,rgba(150,116,78,.28) 46%,transparent 46.6%)}
+.envelope .flapE{position:absolute;left:4%;right:4%;top:12%;height:38%;z-index:19;
+  transform-origin:50% 0;border-radius:5px 5px 0 0;
+  background:linear-gradient(#fdf7ee,#eee0cd 72%,#e0cdb4);
   clip-path:polygon(0 0,100% 0,50% 100%);
-  filter:drop-shadow(0 4px 6px rgba(110,82,54,.28));
+  filter:drop-shadow(0 5px 7px rgba(90,66,42,.3));
   transition:transform .8s cubic-bezier(.4,1.15,.45,1)}
-.envelope.busy .flapE,.envelope.done .flapE{transform:rotateX(-174deg)}
-.envelope .seal{position:absolute;left:50%;top:44%;width:23%;aspect-ratio:1/1;z-index:22;
+.envelope.busy .flapE,.envelope.done .flapE{transform:rotateX(-176deg)}
+.envelope .stamp{position:absolute;right:11%;top:16%;width:17%;aspect-ratio:1/1.24;z-index:20;
+  background:repeating-linear-gradient(45deg,#e9c9d6 0 6px,#dbb4c5 6px 12px);
+  border:3px dashed rgba(255,255,255,.9);border-radius:2px;opacity:.9;
+  transition:opacity .4s}
+.envelope .seal{position:absolute;left:50%;top:41%;width:19%;aspect-ratio:1/1;z-index:22;
   transform:translate(-50%,-50%);border-radius:50%;cursor:pointer;
   background:radial-gradient(circle at 36% 30%,#ffa9bd,var(--accent) 52%,#a82c4f);
-  box-shadow:0 4px 12px rgba(0,0,0,.4),0 -2px 5px rgba(255,255,255,.35) inset;
+  box-shadow:0 4px 12px rgba(0,0,0,.45),0 -2px 5px rgba(255,255,255,.4) inset;
   transition:transform .5s,opacity .45s}
 .envelope .seal::after{content:"♡";position:absolute;inset:0;display:grid;place-items:center;
-  color:rgba(255,255,255,.8);font-size:19px}
+  color:rgba(255,255,255,.85);font-size:17px}
 .envelope.busy .seal,.envelope.done .seal{opacity:0;transform:translate(-50%,-50%) scale(1.8) rotate(26deg)}
-.envelope.done .pocket{opacity:0}
+.envelope .hide{position:absolute;left:0;right:0;bottom:0;height:13%;z-index:17;
+  background:#191320;transition:opacity .4s}
+.envelope.st2 .pocket,.envelope.st2 .flapE,.envelope.st2 .env,
+.envelope.st2 .stamp,.envelope.st2 .hide{opacity:0}
 
 /* ─────────── curtain ─────────── */
 .curtain .pan{position:absolute;top:0;bottom:0;width:52%;z-index:14;
@@ -371,15 +396,16 @@ body{display:flex;align-items:center;justify-content:center;
 .snowglobe.done .prize{filter:none}
 .snowglobe .glass{position:absolute;inset:0;z-index:18;pointer-events:none;
   background:radial-gradient(circle at 31% 22%,rgba(255,255,255,.4),transparent 40%),
-    radial-gradient(circle at 50% 46%,transparent 54%,rgba(8,12,26,.72) 88%)}
+    radial-gradient(circle at 50% 46%,transparent 54%,rgba(8,12,26,.72) 88%);
+  transition:opacity 1s ease}
+.snowglobe.done .glass{opacity:.42}
 .snowglobe .flakes{position:absolute;inset:0;z-index:16;pointer-events:none}
 .snowglobe .flakes i{position:absolute;border-radius:50%;background:#fff;opacity:.9;
   filter:drop-shadow(0 0 4px rgba(200,230,255,.9))}
 .snowglobe .stand{position:absolute;left:14%;right:14%;bottom:0;height:11%;z-index:19;
   border-radius:10px 10px 0 0;background:linear-gradient(#6b4a2e,#3d2917);
-  box-shadow:0 -3px 10px rgba(0,0,0,.5);transition:opacity .6s}
-.snowglobe .flakes{transition:opacity 1.1s ease .3s}
-.snowglobe.done .flakes,.snowglobe.done .stand,.snowglobe.done .glass{opacity:0;transition:opacity 1s ease .25s}
+  box-shadow:0 -3px 10px rgba(0,0,0,.5);transition:opacity .8s ease .3s}
+.snowglobe.done .stand{opacity:0}
 
 /* ─────────── slot ─────────── */
 .slot{background:linear-gradient(#2c1033,#150818)}
@@ -415,18 +441,27 @@ body{display:flex;align-items:center;justify-content:center;
 .slot.done .jack{animation:none!important;opacity:0;transition:opacity .5s;pointer-events:none}
 
 /* ─────────── holo ─────────── */
-.holo .prize.b{z-index:2;transition:opacity .18s linear}
+.holo{background:#0d0a14}
+.holo .prize{opacity:0;transition:opacity .16s linear}
+.holo .prize.b{z-index:2}
+.holo .foil{position:absolute;inset:0;z-index:10;pointer-events:none;
+  background:
+    repeating-linear-gradient(104deg,
+      rgba(255,60,160,.5) 0 14px,rgba(255,215,60,.46) 14px 28px,rgba(60,240,180,.48) 28px 42px,
+      rgba(70,160,255,.5) 42px 56px,rgba(200,90,255,.46) 56px 70px),
+    linear-gradient(#1b1526,#0d0a14);
+  transition:opacity .5s ease}
 .holo .sheen{position:absolute;inset:-40%;z-index:14;pointer-events:none;mix-blend-mode:color-dodge;
-  background:repeating-linear-gradient(104deg,
-    rgba(255,40,150,.34) 0 16px,rgba(255,210,40,.3) 16px 32px,rgba(40,240,180,.32) 32px 48px,
-    rgba(60,150,255,.34) 48px 64px,rgba(190,70,255,.3) 64px 80px)}
+  background:linear-gradient(104deg,transparent 26%,rgba(255,255,255,.5) 42%,
+    rgba(255,190,240,.42) 50%,rgba(170,240,255,.45) 58%,transparent 74%);
+  transition:opacity .25s linear}
 .holo .glare{position:absolute;inset:0;z-index:15;pointer-events:none;mix-blend-mode:screen;
-  background:radial-gradient(circle at var(--gx,50%) 38%,rgba(255,255,255,.55),transparent 42%)}
-.holo .sheen,.holo .glare{transition:opacity .8s ease}
-.holo.done .sheen{opacity:.16!important}
-.holo.done .glare{opacity:0}
+  background:radial-gradient(circle at var(--gx,50%) 38%,rgba(255,255,255,.4),transparent 40%)}
 .holo .edge{position:absolute;inset:0;z-index:16;pointer-events:none;border-radius:inherit;
-  box-shadow:0 0 0 2px rgba(255,255,255,.28) inset}
+  box-shadow:0 0 0 2px rgba(255,255,255,.3) inset}
+.holo.done .foil{opacity:.1}
+.holo.done .glare{opacity:0}
+.holo.done .prize.b{opacity:1!important;transition:opacity .6s ease}
 
 /* ─────────── scan ─────────── */
 /* ※ .dark 는 z-index 0 — 사진(1)보다 아래. 위에 두면 영원히 검은 화면이 됨 */
@@ -490,6 +525,21 @@ card.style.cssText = `--arr:${rw}/${rh};--ar:${(rw/rh).toFixed(4)};--fit:${cfg.f
 const cap = (cfg.title||cfg.sub)
   ? `<div class="cap">${cfg.title?`<h1>${esc(cfg.title)}</h1>`:''}${cfg.sub?`<p>${esc(cfg.sub)}</p>`:''}</div>` : '';
 const hint = (t,mid) => `<div class="hint${mid?' mid':''}">${esc(cfg.label||t)}</div>`;
+const BOW = `<svg viewBox="0 0 128 84" xmlns="http://www.w3.org/2000/svg"><defs>
+<linearGradient id="gb" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#fff7d9"/><stop offset=".5" stop-color="#f6d478"/>
+<stop offset="1" stop-color="#d9a52f"/></linearGradient>
+<linearGradient id="gk" x1=".3" y1="0" x2=".7" y2="1">
+<stop offset="0" stop-color="#fffbe8"/><stop offset=".55" stop-color="#ffdf85"/>
+<stop offset="1" stop-color="#cf9c28"/></linearGradient></defs>
+<path d="M60 42 C34 6 4 12 6 33 C8 54 38 55 60 42 Z" fill="url(#gb)"/>
+<path d="M68 42 C94 6 124 12 122 33 C120 54 90 55 68 42 Z" fill="url(#gb)"/>
+<path d="M57 48 L40 82 L58 72 Z" fill="url(#gb)"/>
+<path d="M71 48 L88 82 L70 72 Z" fill="url(#gb)"/>
+<path d="M60 42 C34 6 4 12 6 33" fill="none" stroke="rgba(150,105,20,.35)" stroke-width="2"/>
+<path d="M68 42 C94 6 124 12 122 33" fill="none" stroke="rgba(150,105,20,.35)" stroke-width="2"/>
+<ellipse cx="64" cy="43" rx="14" ry="12" fill="url(#gk)"/>
+<ellipse cx="60" cy="39" rx="5" ry="4" fill="rgba(255,255,255,.55)"/></svg>`;
 const prize = (cls='') => `<img class="prize ${cls}" src="${IMG}" alt="">`;
 
 let finished = false;
@@ -683,30 +733,57 @@ polaroid: {
     return ()=>{ bar.style.width='100%'; im.style.transition='filter 1.2s ease'; im.style.filter='none'; finish(18); }; } },
 
 film: {
-  html: () => `<div class="strip"><div class="fr blank"></div><div class="fr"><img src="${IMG}" alt=""></div></div>
-    <div class="perf t"></div><div class="perf b"></div>${cap}
-    ${hint('레버를 돌려 다음 컷으로',true)}<div class="lever" aria-label="필름 감기"></div>`,
+  html: () => {
+    const blanks = [1,2,3,4,5].map(i=>`<div class="fr blank" data-n="0${i}"></div>`).join('');
+    return `<div class="gate"><div class="strip">${blanks}<div class="fr"><img src="${IMG}" alt=""></div></div></div>
+      <div class="perf t"><u></u></div><div class="perf b"><u></u></div>${cap}
+      <div class="counter">05 ▸ 06</div>${hint('레버를 감아 다음 컷으로',true)}
+      <div class="lever" aria-label="필름 감기"></div>`;
+  },
   init(){
-    ['t','b'].forEach(k=>{ const p=card.querySelector('.perf.'+k);
-      for(let i=0;i<9;i++){ const s=document.createElement('i'); s.style.left=(i*11.2+2.5)+'%'; p.appendChild(s); } });
-    const strip=card.querySelector('.strip');
-    function wind(){ if(finished)return; card.classList.add('busy');
-      strip.style.transform='translateX(-100%)';
-      setTimeout(()=>{ card.classList.remove('busy'); finish(14); },820); }
+    const strip=card.querySelector('.strip'), N=6;
+    strip.style.setProperty('--fw', card.clientWidth+'px');
+    strip.style.width = (card.clientWidth*N)+'px';
+    // 퍼포레이션 구멍을 넉넉히 채워 스트립과 함께 흐르게
+    card.querySelectorAll('.perf u').forEach(u=>{
+      u.innerHTML = '<i></i>'.repeat(Math.ceil(card.clientWidth/24)*N + 8); });
+    const cnt=card.querySelector('.counter');
+    function wind(){
+      if(finished) return;
+      card.classList.add('busy');
+      const dist = card.clientWidth*(N-1);
+      strip.style.transition='transform 1.45s cubic-bezier(.22,.72,.15,1)';
+      strip.style.transform=`translateX(-${dist}px)`;
+      card.querySelectorAll('.perf u').forEach((u,i)=>{
+        u.style.transition='transform 1.45s cubic-bezier(.22,.72,.15,1)';
+        u.style.transform=`translateY(-50%) translateX(-${dist*(i?1.05:.95)}px)`; });
+      let f=1; const iv=setInterval(()=>{ f=Math.min(N,f+1);
+        cnt.textContent=`0${Math.min(N,f)} ▸ 06`; if(f>=N) clearInterval(iv); },230);
+      setTimeout(()=>{ card.classList.remove('busy'); finish(16); },1480);
+    }
     card.querySelector('.lever').addEventListener('click',e=>{e.stopPropagation();wind();});
     card.addEventListener('click',wind); return wind; } },
 
 gift: {
-  html: () => `${prize()}${cap}<div class="base"></div><div class="lid"></div>
-    <div class="rib v"></div><div class="rib h"></div><div class="knot"></div>
+  html: () => `${prize()}${cap}
+    <div class="bg2"></div>
+    <div class="base"><div class="rv"></div></div>
+    <div class="lid"><div class="rv"></div><div class="rh"></div></div>
+    <div class="bow">${BOW}</div>
     ${hint('리본을 당겨보세요',true)}`,
   init(){
-    const knot=card.querySelector('.knot');
-    drag(knot,{axis:'y',span:()=>card.clientHeight*.28,
-      onMove:p=>{ knot.style.transform=`translate(-50%,${-48+p*46}%) rotate(${p*45}deg)`;
-        knot.style.opacity=1-p*.35; },
-      onDone:()=>finish(24,['#ffd76b','#fff','#ffb3c7',cfg.accent]) });
-    return ()=>finish(24,['#ffd76b','#fff','#ffb3c7',cfg.accent]); } },
+    const bow=card.querySelector('.bow'), lid=card.querySelector('.lid');
+    drag(bow,{axis:'y',span:()=>card.clientHeight*.26,
+      onMove:p=>{ bow.style.transform=`translate(-50%,${-50+p*34}%) rotate(${p*36}deg) scale(${1-p*.12})`;
+        lid.style.transform=`translateY(${-p*7}%) rotate(${p*2.5}deg)`; },
+      onDone:()=>{ bow.style.transition='transform .55s ease,opacity .4s';
+        bow.style.transform='translate(-50%,-190%) rotate(58deg) scale(.7)';
+        bow.style.opacity='0'; lid.style.transform='';
+        finish(26,['#ffd76b','#fff','#ffb3c7',cfg.accent]); },
+      onCancel:()=>{ lid.style.transform=''; }});
+    return ()=>{ bow.style.transition='transform .5s ease,opacity .35s';
+      bow.style.transform='translate(-50%,-190%) rotate(58deg)'; bow.style.opacity='0';
+      finish(26,['#ffd76b','#fff','#ffb3c7',cfg.accent]); }; } },
 
 gacha: {
   html: () => `${prize()}${cap}<div class="hous"></div><div class="dome"></div><div class="balls"></div>
@@ -734,12 +811,14 @@ parcel: {
     return ()=>finish(18); } },
 
 envelope: {
-  html: () => `<div class="letter"><img src="${IMG}" alt=""></div>${cap}
-    <div class="pocket"></div><div class="flapE"></div><div class="seal" aria-label="봉투 열기"></div>
-    ${hint('씰을 눌러 열기',false)}`,
+  html: () => `<div class="env"></div><div class="letter"><img src="${IMG}" alt=""></div>${cap}
+    <div class="hide"></div><div class="pocket"></div><div class="stamp"></div><div class="flapE"></div>
+    <div class="seal" aria-label="봉투 열기"></div>${hint('씰을 눌러 열기',false)}`,
   init(){
     function open(){ if(finished)return; card.classList.add('busy');
-      setTimeout(()=>finish(20,['#ffb3c7','#fff','#ffd76b',cfg.accent]),480); }
+      setTimeout(()=>finish(20,['#ffb3c7','#fff','#ffd76b',cfg.accent]),520);
+      // 편지가 봉투 밖으로 다 나온 뒤에야 카드 전체를 채우도록 2단계 분리
+      setTimeout(()=>card.classList.add('st2'),1700); }
     card.querySelector('.seal').addEventListener('click',e=>{e.stopPropagation();open();});
     card.addEventListener('click',open); return open; } },
 
@@ -802,18 +881,22 @@ snowglobe: {
     ${hint('흔들어보세요',true)}`,
   init(){
     const box=card.querySelector('.flakes'), fl=[];
-    for(let i=0;i<52;i++){ const s=document.createElement('i');
+    for(let i=0;i<58;i++){ const s=document.createElement('i');
       const d=2+Math.random()*5; s.style.width=s.style.height=d+'px';
-      const x=Math.random()*96, y=Math.random()*100;
-      s.style.left=x+'%'; s.style.top='0'; box.appendChild(s);
-      fl.push({el:s,y,v:.05+Math.random()*.13,sw:Math.random()*6.28}); }
+      s.style.left=(Math.random()*96)+'%'; box.appendChild(s);
+      fl.push({el:s,y:Math.random()*100,v:.045+Math.random()*.1,sw:Math.random()*6.28}); }
     let energy=0;
-    (function loop(){ energy*=.984;
-      fl.forEach(f=>{ f.y += f.v*(1+energy*6) - energy*f.v*13; f.sw+=.045;
+    (function loop(){
+      energy*=.978;                       // 흔든 힘은 서서히 가라앉고
+      fl.forEach(f=>{
+        f.y += f.v*(1+energy*5) - energy*f.v*14;   // 에너지가 있으면 위로 솟구침
+        f.sw += .04 + energy*.05;
         if(f.y>102) f.y=-3; if(f.y<-5) f.y=101;
-        f.el.style.transform=`translate(${Math.sin(f.sw)*(3+energy*10)}px,${f.y}cqh)`;
-        f.el.style.top=f.y+'%'; f.el.style.transform=`translateX(${Math.sin(f.sw)*(3+energy*10)}px)`; });
-      requestAnimationFrame(loop); })();
+        f.el.style.top=f.y+'%';
+        f.el.style.transform=`translateX(${Math.sin(f.sw)*(2.5+energy*11)}px)`;
+      });
+      requestAnimationFrame(loop);        // 완료 뒤에도 계속 — 잔잔히 내림
+    })();
     const im=card.querySelector('.prize');
     shake(card,1800,p=>{ energy=Math.max(energy,p);
       im.style.filter=`blur(${7-p*7}px) brightness(${.7+p*.3}) saturate(${.7+p*.3})`; },
@@ -841,23 +924,28 @@ slot: {
 
 holo: {
   html: () => `<img class="prize a" src="${IMG}" alt=""><img class="prize b" src="${IMG2}" alt="">
-    ${cap}<div class="sheen"></div><div class="glare"></div><div class="edge"></div>
-    ${hint('좌우로 기울여보세요',true)}`,
+    <div class="foil"></div>${cap}<div class="sheen"></div><div class="glare"></div>
+    <div class="edge"></div>${hint('좌우로 기울여보세요',true)}`,
   init(){
-    const B=card.querySelector('.prize.b'), sh=card.querySelector('.sheen');
+    const A=card.querySelector('.prize.a'), B=card.querySelector('.prize.b');
+    const sh=card.querySelector('.sheen'), fo=card.querySelector('.foil');
     let lo=1, hi=0;
     function tilt(p){
-      B.style.opacity = p<.5 ? 0 : Math.min(1,(p-.5)*3.2);
-      sh.style.transform=`translateX(${(p-.5)*46}%)`;
-      sh.style.opacity=(.34+Math.abs(p-.5)*.8).toFixed(2);
+      const t=Math.min(1,Math.abs(p-.5)*2.3);     // 중앙=가림, 끝=선명
+      A.style.opacity = p<.5 ? t : 0;
+      B.style.opacity = p<.5 ? 0 : t;
+      fo.style.opacity = (1-t*.94).toFixed(3);
+      sh.style.transform=`translateX(${(p-.5)*52}%)`;
+      sh.style.opacity=(.9-t*.55).toFixed(2);
       card.style.setProperty('--gx',(p*100).toFixed(0)+'%');
       lo=Math.min(lo,p); hi=Math.max(hi,p);
-      if(!finished && lo<.22 && hi>.78) finish(18,['#ff4fa3','#4fd8ff','#c3ff6b','#fff']);
+      if(!finished && lo<.2 && hi>.8) finish(18,['#ff4fa3','#4fd8ff','#c3ff6b','#fff']);
     }
+    tilt(.5);
     card.addEventListener('pointermove',e=>{ const r=card.getBoundingClientRect();
       tilt(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))); });
     addEventListener('deviceorientation',e=>{ if(e.gamma!=null) tilt(Math.max(0,Math.min(1,(e.gamma+40)/80))); });
-    return ()=>{ tilt(0); setTimeout(()=>tilt(1),260); }; } },
+    return ()=>{ tilt(.06); setTimeout(()=>tilt(.94),420); }; } },
 
 scan: {
   html: () => `<div class="dark"></div>${prize()}${cap}
