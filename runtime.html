@@ -166,19 +166,16 @@ body{display:flex;align-items:center;justify-content:center;
 @keyframes frameIn{0%{box-shadow:0 0 0 5px rgba(255,255,255,.75) inset}
   100%{box-shadow:0 0 0 0 rgba(255,255,255,0) inset}}
 
-/* 셔터 버튼 */
+/* 셔터 버튼 — 흰 링 하나 + 흰 원 하나. box-shadow 로 간격을 고정해 어긋남 없음 */
 .shut{position:absolute;left:50%;bottom:15px;transform:translateX(-50%);z-index:46;
-  width:58px;height:58px;border:0;border-radius:50%;cursor:pointer;padding:0;
-  background:rgba(255,255,255,.14);backdrop-filter:blur(6px);
-  box-shadow:0 0 0 2px rgba(255,255,255,.55) inset,0 6px 18px -4px rgba(0,0,0,.7);
-  transition:transform .16s,opacity .4s;display:grid;place-items:center}
-.shut::after{content:"";width:44px;height:44px;border-radius:50%;
-  background:radial-gradient(circle at 42% 34%,#fff 0 38%,#ffd2dd 39% 62%,var(--accent) 63%);
-  transition:transform .16s,background .3s}
-.shut:active::after{transform:scale(.86)}
-.camera.busy .shut::after{background:radial-gradient(circle at 42% 34%,#fff5f8 0 40%,#ffbccc 41% 66%,#e0567a 67%)}
+  width:42px;height:42px;border:0;border-radius:50%;cursor:pointer;padding:0;
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(0,0,0,.18),0 0 0 6px #fff,0 4px 14px -2px rgba(0,0,0,.6);
+  transition:transform .16s ease,opacity .4s ease,background .3s ease}
+.shut:active{transform:translateX(-50%) scale(.9)}
+.camera.busy .shut{background:#ffd8e2}
 .done .shut{opacity:0;pointer-events:none}
-.shut:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.shut:focus-visible{outline:2px solid #fff;outline-offset:8px}
 
 /* ─────────── polaroid ─────────── */
 .polaroid{background:#14121a}
