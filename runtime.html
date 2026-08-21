@@ -50,56 +50,135 @@ body{display:flex;align-items:center;justify-content:center;
 .wipe.done .prize{filter:none}
 
 /* ─────────── camera ─────────── */
-.camera .prize{transform:scale(1.18);
-  filter:blur(var(--blur,40px)) saturate(.4) brightness(.7);
-  transition:filter 1.15s cubic-bezier(.16,.84,.32,1),transform 1.3s cubic-bezier(.16,.84,.32,1);
-  animation:hunt 3.6s ease-in-out infinite}
-@keyframes hunt{0%,100%{filter:blur(var(--blur,40px)) saturate(.4) brightness(.7)}
-  46%{filter:blur(calc(var(--blur,40px)*.68)) saturate(.5) brightness(.78)}}
-.camera.busy .prize{animation:none;transition:filter .36s ease,transform .36s ease;
-  transform:scale(1.14);filter:blur(calc(var(--blur,40px)*.82)) saturate(.46) brightness(.76)}
-.camera.done .prize{animation:none;transform:scale(1);filter:blur(0) saturate(1.04) brightness(1)}
-.grid{position:absolute;inset:0;z-index:12;opacity:.5;transition:opacity .45s;pointer-events:none}
-.grid i{position:absolute;background:rgba(255,255,255,.3)}
+.camera{background:#07070a}
+/* 렌즈 상: 초점 헌팅 → 잠금 → 개방 */
+.camera .prize{transform:scale(1.2);
+  filter:blur(var(--blur,40px)) saturate(.34) brightness(.62) contrast(.92);
+  transition:filter 1.25s cubic-bezier(.16,.84,.32,1),transform 1.4s cubic-bezier(.16,.84,.32,1);
+  animation:hunt 3.4s ease-in-out infinite}
+@keyframes hunt{0%,100%{filter:blur(var(--blur,40px)) saturate(.34) brightness(.62) contrast(.92)}
+  44%{filter:blur(calc(var(--blur,40px)*.64)) saturate(.44) brightness(.72) contrast(.96)}}
+.camera.busy .prize{animation:none;transition:filter .42s ease,transform .42s ease;
+  transform:scale(1.15);filter:blur(calc(var(--blur,40px)*.34)) saturate(.5) brightness(.78)}
+.camera.done .prize{animation:none;transform:scale(1);
+  filter:blur(0) saturate(1.06) brightness(1.02) contrast(1.02)}
+
+/* 렌즈 보케 — 흐릴 때만 떠다니는 빛망울 */
+.camera .bokeh{position:absolute;inset:0;z-index:2;pointer-events:none;
+  transition:opacity .8s ease}
+.camera .bokeh i{position:absolute;border-radius:50%;
+  background:radial-gradient(circle at 38% 34%,rgba(255,255,255,.34),rgba(255,225,240,.1) 60%,transparent 74%);
+  animation:float var(--d,7s) ease-in-out infinite alternate}
+@keyframes float{to{transform:translate(var(--tx,14px),var(--ty,-18px)) scale(1.14)}}
+.camera.done .bokeh{opacity:0}
+
+/* 뷰파인더 HUD */
+.camera .hud{position:absolute;inset:0;z-index:12;pointer-events:none;
+  font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;
+  color:rgba(255,255,255,.82);text-shadow:0 1px 3px rgba(0,0,0,.7);
+  transition:opacity .5s ease}
+.camera.done .hud{opacity:0}
+.camera .hud .tl{position:absolute;left:7%;top:5.5%;display:flex;align-items:center;gap:5px}
+.camera .hud .tr{position:absolute;right:7%;top:5.5%}
+.camera .hud .bl{position:absolute;left:7%;bottom:5.5%}
+.camera .hud .brr{position:absolute;right:7%;bottom:5.5%}
+.camera .hud .rec{width:6px;height:6px;border-radius:50%;background:#ff4d5e;
+  box-shadow:0 0 7px #ff4d5e;animation:blink 1.5s steps(1) infinite}
+@keyframes blink{50%{opacity:.2}}
+.camera .hud .bat{display:inline-block;width:16px;height:8px;border:1px solid rgba(255,255,255,.7);
+  border-radius:2px;position:relative;vertical-align:-1px;margin-left:5px}
+.camera .hud .bat::before{content:"";position:absolute;left:1px;top:1px;bottom:1px;width:64%;
+  background:rgba(255,255,255,.8);border-radius:1px}
+.camera .hud .bat::after{content:"";position:absolute;right:-3px;top:2px;bottom:2px;width:2px;
+  background:rgba(255,255,255,.7);border-radius:0 1px 1px 0}
+
+/* 구도 그리드 */
+.grid{position:absolute;inset:0;z-index:11;opacity:.4;transition:opacity .45s;pointer-events:none}
+.grid i{position:absolute;background:rgba(255,255,255,.26)}
 .grid i:nth-child(1){left:33.33%;top:0;bottom:0;width:1px}
 .grid i:nth-child(2){left:66.66%;top:0;bottom:0;width:1px}
 .grid i:nth-child(3){top:33.33%;left:0;right:0;height:1px}
 .grid i:nth-child(4){top:66.66%;left:0;right:0;height:1px}
 .done .grid{opacity:0}
-.fc{position:absolute;inset:0;z-index:13;pointer-events:none}
-.fc b{position:absolute;width:22px;height:22px;border:2px solid rgba(255,255,255,.7);
-  transition:transform .28s cubic-bezier(.16,.84,.32,1),border-color .28s,opacity .4s}
-.fc b:nth-child(1){left:15%;top:18%;border-right:0;border-bottom:0;border-radius:4px 0 0 0}
-.fc b:nth-child(2){right:15%;top:18%;border-left:0;border-bottom:0;border-radius:0 4px 0 0}
-.fc b:nth-child(3){left:15%;bottom:18%;border-right:0;border-top:0;border-radius:0 0 0 4px}
-.fc b:nth-child(4){right:15%;bottom:18%;border-left:0;border-top:0;border-radius:0 0 4px 0}
-.camera.busy .fc b{border-color:var(--accent)}
-.camera.busy .fc b:nth-child(1){transform:translate(9px,9px)}
-.camera.busy .fc b:nth-child(2){transform:translate(-9px,9px)}
-.camera.busy .fc b:nth-child(3){transform:translate(9px,-9px)}
-.camera.busy .fc b:nth-child(4){transform:translate(-9px,-9px)}
-.done .fc b{opacity:0}
-.blade{position:absolute;left:0;right:0;height:52%;background:#07070a;z-index:22}
-.blade.t{top:0;transform:translateY(-102%)}
-.blade.b{bottom:0;transform:translateY(102%)}
-.snap .blade.t{animation:bt .34s cubic-bezier(.16,.84,.32,1)}
-.snap .blade.b{animation:bb .34s cubic-bezier(.16,.84,.32,1)}
-@keyframes bt{0%,100%{transform:translateY(-102%)}42%{transform:translateY(0)}}
-@keyframes bb{0%,100%{transform:translateY(102%)}42%{transform:translateY(0)}}
-.sweep{position:absolute;inset:-20% -60%;z-index:23;opacity:0;pointer-events:none;
-  background:linear-gradient(102deg,transparent 34%,rgba(255,255,255,.96) 49%,rgba(255,240,245,.7) 55%,transparent 68%)}
-.snap .sweep{animation:sw .62s cubic-bezier(.3,.02,.2,1) .16s}
-@keyframes sw{0%{opacity:0;transform:translateX(-70%)}18%{opacity:1}100%{opacity:0;transform:translateX(70%)}}
+
+/* AF 프레임 — 크게 떠다니다 중앙으로 수축하며 잠김 */
+.fc{position:absolute;left:50%;top:46%;width:58%;aspect-ratio:1/1;z-index:13;pointer-events:none;
+  transform:translate(-50%,-50%);
+  transition:transform .5s cubic-bezier(.3,1.3,.4,1),width .5s cubic-bezier(.3,1.3,.4,1),opacity .4s;
+  animation:afdrift 3.4s ease-in-out infinite}
+@keyframes afdrift{0%,100%{transform:translate(-50%,-50%)}
+  35%{transform:translate(-56%,-53%)}70%{transform:translate(-45%,-47%)}}
+.fc b{position:absolute;width:20%;height:20%;border:2px solid rgba(255,255,255,.75);
+  transition:border-color .3s}
+.fc b:nth-child(1){left:0;top:0;border-right:0;border-bottom:0;border-radius:3px 0 0 0}
+.fc b:nth-child(2){right:0;top:0;border-left:0;border-bottom:0;border-radius:0 3px 0 0}
+.fc b:nth-child(3){left:0;bottom:0;border-right:0;border-top:0;border-radius:0 0 0 3px}
+.fc b:nth-child(4){right:0;bottom:0;border-left:0;border-top:0;border-radius:0 0 3px 0}
+.camera.busy .fc{animation:none;width:36%;transform:translate(-50%,-50%) scale(1)}
+.camera.busy .fc b{border-color:var(--accent);box-shadow:0 0 9px rgba(255,127,156,.65)}
+.camera.lock .fc{animation:lockpulse .34s ease-out}
+@keyframes lockpulse{0%{transform:translate(-50%,-50%) scale(1.14)}
+  100%{transform:translate(-50%,-50%) scale(1)}}
+.done .fc{opacity:0}
+/* 초점 잠금 표시 */
+.camera .afok{position:absolute;left:50%;top:46%;z-index:14;transform:translate(-50%,152%);
+  font:700 9px/1 ui-monospace,monospace;letter-spacing:.18em;color:var(--accent);
+  opacity:0;transition:opacity .2s;text-shadow:0 0 8px rgba(255,127,156,.7)}
+.camera.lock .afok{opacity:1}
+.done .afok{opacity:0!important}
+
+/* 셔터 블레이드 — 위아래 + 좌우 4장 */
+.blade{position:absolute;background:#05050880;z-index:22;backdrop-filter:blur(2px)}
+.blade.t{left:0;right:0;top:0;height:52%;transform:translateY(-101%)}
+.blade.b{left:0;right:0;bottom:0;height:52%;transform:translateY(101%)}
+.blade.l{top:0;bottom:0;left:0;width:52%;transform:translateX(-101%)}
+.blade.r{top:0;bottom:0;right:0;width:52%;transform:translateX(101%)}
+.snap .blade.t{animation:bt .3s cubic-bezier(.3,0,.3,1)}
+.snap .blade.b{animation:bb .3s cubic-bezier(.3,0,.3,1)}
+.snap .blade.l{animation:bl .3s cubic-bezier(.3,0,.3,1) .03s}
+.snap .blade.r{animation:br2 .3s cubic-bezier(.3,0,.3,1) .03s}
+@keyframes bt{0%,100%{transform:translateY(-101%)}46%{transform:translateY(0)}}
+@keyframes bb{0%,100%{transform:translateY(101%)}46%{transform:translateY(0)}}
+@keyframes bl{0%,100%{transform:translateX(-101%)}46%{transform:translateX(0)}}
+@keyframes br2{0%,100%{transform:translateX(101%)}46%{transform:translateX(0)}}
+
+/* 플래시 — 화이트아웃 + 대각 스윕 + 렌즈 플레어 */
 .pop{position:absolute;inset:0;z-index:24;background:#fff;opacity:0;pointer-events:none}
-.snap .pop{animation:pp .3s ease-out .14s}
-@keyframes pp{0%,100%{opacity:0}22%{opacity:.92}}
-.shut{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:46;
-  width:52px;height:52px;border:0;border-radius:50%;cursor:pointer;
-  background:radial-gradient(circle at 50% 38%,#fff 0 42%,#ffd2dd 43% 60%,var(--accent) 61%);
-  box-shadow:0 0 0 4px rgba(255,127,156,.18),0 6px 16px -4px rgba(0,0,0,.6);
-  transition:transform .14s,opacity .4s}
-.shut:active{transform:translateX(-50%) scale(.92)}
+.snap .pop{animation:pp .34s ease-out .1s}
+@keyframes pp{0%,100%{opacity:0}16%{opacity:.97}}
+.sweep{position:absolute;inset:-25% -60%;z-index:25;opacity:0;pointer-events:none;
+  background:linear-gradient(102deg,transparent 34%,rgba(255,255,255,.98) 48%,
+    rgba(255,235,245,.72) 55%,transparent 68%)}
+.snap .sweep{animation:sw .66s cubic-bezier(.3,.02,.2,1) .16s}
+@keyframes sw{0%{opacity:0;transform:translateX(-72%)}18%{opacity:1}100%{opacity:0;transform:translateX(72%)}}
+.flare{position:absolute;inset:0;z-index:26;opacity:0;pointer-events:none;mix-blend-mode:screen;
+  background:
+    radial-gradient(circle at 30% 32%,rgba(255,235,190,.75),transparent 16%),
+    radial-gradient(circle at 52% 48%,rgba(190,235,255,.55),transparent 11%),
+    radial-gradient(circle at 70% 64%,rgba(255,190,220,.6),transparent 14%)}
+.snap .flare{animation:fl .78s ease-out .16s}
+@keyframes fl{0%,100%{opacity:0;transform:scale(.85)}26%{opacity:1}100%{transform:scale(1.25)}}
+
+/* 노출 프레임 — 촬영 직후 사진이 자리잡는 느낌 */
+.camera.done .frameFlash{animation:frameIn .6s cubic-bezier(.3,1.2,.4,1)}
+.frameFlash{position:absolute;inset:0;z-index:27;pointer-events:none;border-radius:inherit;
+  box-shadow:0 0 0 0 rgba(255,255,255,0) inset}
+@keyframes frameIn{0%{box-shadow:0 0 0 5px rgba(255,255,255,.75) inset}
+  100%{box-shadow:0 0 0 0 rgba(255,255,255,0) inset}}
+
+/* 셔터 버튼 */
+.shut{position:absolute;left:50%;bottom:15px;transform:translateX(-50%);z-index:46;
+  width:58px;height:58px;border:0;border-radius:50%;cursor:pointer;padding:0;
+  background:rgba(255,255,255,.14);backdrop-filter:blur(6px);
+  box-shadow:0 0 0 2px rgba(255,255,255,.55) inset,0 6px 18px -4px rgba(0,0,0,.7);
+  transition:transform .16s,opacity .4s;display:grid;place-items:center}
+.shut::after{content:"";width:44px;height:44px;border-radius:50%;
+  background:radial-gradient(circle at 42% 34%,#fff 0 38%,#ffd2dd 39% 62%,var(--accent) 63%);
+  transition:transform .16s,background .3s}
+.shut:active::after{transform:scale(.86)}
+.camera.busy .shut::after{background:radial-gradient(circle at 42% 34%,#fff5f8 0 40%,#ffbccc 41% 66%,#e0567a 67%)}
 .done .shut{opacity:0;pointer-events:none}
+.shut:focus-visible{outline:2px solid #fff;outline-offset:4px}
 
 /* ─────────── polaroid ─────────── */
 .polaroid{background:#14121a}
@@ -504,7 +583,8 @@ const cfg = {
   fx:g('fx','scratch'), img:g('img',''), img2:g('img2',''), cover:g('cover',''),
   label:g('label',''), title:g('title',''), sub:g('sub',''),
   ratio:g('ratio','74/105'), fit:g('fit','cover'), accent:g('accent','#ff7f9c'),
-  radius:g('radius','18'), blur:+g('blur',40), pct:+g('pct',52)/100, auto:g('auto','')==='1'
+  radius:g('radius','18'), blur:+g('blur',40),
+  meta:g('meta','ISO 200'), lens:g('lens','35mm F1.8'), pct:+g('pct',52)/100, auto:g('auto','')==='1'
 };
 const PH = "data:image/svg+xml;utf8,"+encodeURIComponent(
 `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><defs>
@@ -706,16 +786,44 @@ dust: wipeFx({ label:'🧽 먼지를 닦아내세요', pre:'sepia(.5) saturate(.
       c.beginPath(); c.moveTo(x,y); c.lineTo(x+(Math.random()-.5)*W*.4,y+(Math.random()-.5)*H*.3); c.stroke(); } } }),
 
 camera: {
-  html: () => `${prize()}<div class="grid"><i></i><i></i><i></i><i></i></div>
-    <div class="fc"><b></b><b></b><b></b><b></b></div>${hint('셔터를 눌러 초점 맞추기',true)}${cap}
-    <div class="blade t"></div><div class="blade b"></div><div class="sweep"></div><div class="pop"></div>
+  html: () => `${prize()}<div class="bokeh"></div>
+    <div class="grid"><i></i><i></i><i></i><i></i></div>
+    <div class="fc"><b></b><b></b><b></b><b></b></div><div class="afok">AF LOCK</div>
+    <div class="hud">
+      <span class="tl"><i class="rec"></i>REC</span>
+      <span class="tr">${esc(cfg.meta||'ISO 200')}</span>
+      <span class="bl">${esc(cfg.lens||'35mm F1.8')}</span>
+      <span class="brr">4:3<i class="bat"></i></span>
+    </div>
+    ${hint('셔터를 눌러 초점 맞추기',true)}${cap}
+    <div class="blade t"></div><div class="blade b"></div>
+    <div class="blade l"></div><div class="blade r"></div>
+    <div class="pop"></div><div class="sweep"></div><div class="flare"></div>
+    <div class="frameFlash"></div>
     <button class="shut" aria-label="촬영"></button>`,
   init(){
+    // 렌즈 보케 — 흐린 구간에서만 보이는 빛망울
+    const bk=card.querySelector('.bokeh');
+    for(let i=0;i<9;i++){ const el=document.createElement('i');
+      const d=6+Math.random()*11;
+      el.style.cssText=`width:${d}%;aspect-ratio:1/1;left:${4+Math.random()*84}%;top:${6+Math.random()*80}%;`+
+        `--d:${5+Math.random()*5}s;--tx:${(Math.random()*24-12).toFixed(0)}px;`+
+        `--ty:${(Math.random()*24-14).toFixed(0)}px;animation-delay:-${(Math.random()*5).toFixed(1)}s;`+
+        `opacity:${(.12+Math.random()*.2).toFixed(2)}`;
+      bk.appendChild(el); }
+
     let busy=false;
-    function shoot(){ if(busy||finished)return; busy=true; card.classList.add('busy');
-      setTimeout(()=>{ card.classList.add('snap');
-        setTimeout(()=>{ finish(16); busy=false; },170);
-        setTimeout(()=>card.classList.remove('snap'),700); },380); }
+    function shoot(){
+      if(busy||finished) return; busy=true;
+      card.classList.add('busy');                       // ① AF 수축 + 초점 조여짐
+      setTimeout(()=>card.classList.add('lock'),430);   // ② 잠금 펄스 + AF LOCK
+      setTimeout(()=>{
+        card.classList.remove('lock');
+        card.classList.add('snap');                     // ③ 블레이드 + 플래시 + 플레어
+        setTimeout(()=>{ finish(18); busy=false; },150);
+        setTimeout(()=>card.classList.remove('snap'),780);
+      },720);
+    }
     card.querySelector('.shut').addEventListener('click',e=>{e.stopPropagation();shoot();});
     card.addEventListener('click',shoot); return shoot; } },
 
