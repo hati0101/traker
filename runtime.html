@@ -44,11 +44,25 @@ body{display:flex;align-items:center;justify-content:center;
 
 /* ─────────── 닦아내기 3종 공용 ─────────── */
 #cv{position:absolute;inset:0;width:100%;height:100%;z-index:20;
-  touch-action:none;transition:opacity .8s ease;will-change:opacity}
+  touch-action:none;transition:opacity .85s ease;will-change:opacity}
 .done #cv{opacity:0;pointer-events:none}
-.wipe .prize{filter:var(--pre,none);transition:filter 1s ease}
+.wipe .prize{filter:var(--pre,none);transition:filter 1.1s ease}
 .wipe.done .prize{filter:none}
-
+/* 진행률 링 */
+.wipe .prog{position:absolute;right:11px;top:11px;z-index:32;width:34px;height:34px;
+  transition:opacity .45s ease}
+.wipe .prog svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
+.wipe .prog circle{fill:none;stroke-width:3.2}
+.wipe .prog .bgc{stroke:rgba(0,0,0,.22)}
+.wipe .prog .fgc{stroke:var(--accent);stroke-linecap:round;
+  stroke-dasharray:88;stroke-dashoffset:88;transition:stroke-dashoffset .18s linear;
+  filter:drop-shadow(0 0 4px rgba(255,127,156,.6))}
+.wipe .prog b{position:absolute;inset:0;display:grid;place-items:center;
+  font:700 9px/1 ui-monospace,monospace;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.wipe.done .prog{opacity:0}
+/* 부스러기 */
+.wipe .crumb{position:absolute;z-index:31;pointer-events:none;border-radius:1.5px;
+  will-change:transform,opacity}
 /* ─────────── camera ─────────── */
 .camera{background:#07070a}
 /* 렌즈 상: 초점 헌팅 → 잠금 → 개방 */
@@ -178,23 +192,51 @@ body{display:flex;align-items:center;justify-content:center;
 .shut:focus-visible{outline:2px solid #fff;outline-offset:8px}
 
 /* ─────────── polaroid ─────────── */
-.polaroid{background:#14121a}
-.polaroid .slot{position:absolute;left:6%;right:6%;top:3%;height:9px;z-index:24;border-radius:3px;
-  background:linear-gradient(#000,#2a2533);box-shadow:0 4px 14px rgba(0,0,0,.8)}
-.polaroid .frame{position:absolute;left:4%;right:4%;top:4%;z-index:14;
-  background:linear-gradient(#fffefb,#f2eee4);padding:4.5% 4.5% 13%;border-radius:3px;
-  box-shadow:0 14px 30px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.6) inset;
-  transform:translateY(-116%);animation:eject 1.15s cubic-bezier(.2,.9,.3,1) .3s forwards}
-@keyframes eject{to{transform:translateY(0)}}
-.polaroid .win{position:relative;width:100%;aspect-ratio:1/1.18;overflow:hidden;background:#1d2029;
-  box-shadow:0 1px 5px rgba(0,0,0,.35) inset}
+.polaroid{background:linear-gradient(165deg,#1d1826,#0e0c14)}
+/* 카메라 상단부 — 배출구 */
+.polaroid .body3{position:absolute;left:0;right:0;top:0;height:13%;z-index:24;
+  background:linear-gradient(#2b2536,#191424 62%,#0d0a13);
+  border-radius:var(--radius,18px) var(--radius,18px) 4px 4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.75);transition:opacity .6s ease .5s}
+.polaroid .body3::after{content:"";position:absolute;left:8%;right:8%;bottom:5px;height:5px;
+  border-radius:3px;background:#000;box-shadow:0 1px 0 rgba(255,255,255,.12)}
+.polaroid .body3 i{position:absolute;left:9%;top:32%;width:7px;height:7px;border-radius:50%;
+  background:#ff5f74;box-shadow:0 0 8px #ff5f74;animation:blink 1.6s steps(1) infinite}
+.polaroid .body3 b{position:absolute;right:9%;top:28%;font:600 8.5px/1 ui-monospace,monospace;
+  letter-spacing:.16em;color:#7d7492}
+.polaroid.done .body3{opacity:0}
+/* 인화지 */
+.polaroid .frame{position:absolute;left:5%;right:5%;top:11%;z-index:14;
+  background:linear-gradient(#fffefb,#f1ede3);padding:5% 5% 15%;border-radius:3px;
+  box-shadow:0 16px 34px rgba(0,0,0,.62),0 1px 0 rgba(255,255,255,.7) inset;
+  transform:translateY(-112%) rotate(0deg);
+  animation:eject 1.25s cubic-bezier(.24,.9,.3,1) .3s forwards}
+@keyframes eject{60%{transform:translateY(4%) rotate(-1.4deg)}
+  100%{transform:translateY(0) rotate(-.7deg)}}
+.polaroid .win{position:relative;width:100%;aspect-ratio:1/1.1;overflow:hidden;background:#1b1e26;
+  box-shadow:0 1px 6px rgba(0,0,0,.45) inset}
 .polaroid .win img{width:100%;height:100%;object-fit:cover;display:block;
-  filter:brightness(.22) contrast(.35) sepia(.75) blur(4px);transition:filter .5s ease}
-.polaroid .memo{margin-top:7%;text-align:center;font-size:13px;color:#5b5361;letter-spacing:.01em}
-.polaroid .bar{position:absolute;left:8%;right:8%;bottom:6%;height:5px;z-index:26;
-  border-radius:99px;background:rgba(255,255,255,.16);overflow:hidden;transition:opacity .4s}
-.polaroid .bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px}
-.polaroid.done .bar{opacity:0}
+  filter:brightness(.18) contrast(.3) sepia(.8) blur(5px);transition:filter .5s ease}
+/* 현상 얼룩 — 흔들수록 옅어짐 */
+.polaroid .win::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(60% 45% at 28% 32%,rgba(120,96,64,.5),transparent 70%),
+    radial-gradient(50% 40% at 74% 68%,rgba(88,72,52,.45),transparent 72%);
+  opacity:var(--devo,1);transition:opacity .3s linear}
+.polaroid .memo{margin-top:6.5%;text-align:center;font-size:13px;color:#5b5361;letter-spacing:.01em}
+/* 흔들기 게이지 */
+.polaroid .shk{position:absolute;left:50%;bottom:5.5%;transform:translateX(-50%);z-index:34;
+  display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:99px;
+  background:rgba(10,9,14,.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.16);
+  transition:opacity .4s}
+.polaroid .shk span{font-size:11px;color:#e4dcec;white-space:nowrap}
+.polaroid .shk u{display:block;width:64px;height:4px;border-radius:99px;
+  background:rgba(255,255,255,.2);overflow:hidden}
+.polaroid .shk u i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;
+  transition:width .12s linear}
+.polaroid.done .shk{opacity:0}
+.polaroid.shaking .frame{animation:eject 1.25s cubic-bezier(.24,.9,.3,1) .3s forwards,
+  wob .32s ease-in-out infinite}
+@keyframes wob{0%,100%{margin-left:0}25%{margin-left:-4px}75%{margin-left:4px}}
 
 /* ─────────── film ─────────── */
 .film{background:#08070b}
@@ -206,94 +248,145 @@ body{display:flex;align-items:center;justify-content:center;
 .film .fr.blank{background:
   radial-gradient(circle at 50% 42%,rgba(255,255,255,.05),transparent 60%),
   repeating-linear-gradient(115deg,rgba(255,255,255,.028) 0 10px,transparent 10px 22px),#171320}
-.film .fr.blank::after{content:attr(data-n);position:absolute;left:8px;bottom:7px;
-  color:#6c6182;font-size:10px;letter-spacing:.24em}
+.film .fr.blank::after{content:attr(data-n);position:absolute;left:9px;bottom:8px;
+  color:#6c6182;font:600 10px/1 ui-monospace,monospace;letter-spacing:.24em}
+/* 필름 베이스 색조 + 광학 사운드트랙 라인 */
+.film .gate::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:linear-gradient(90deg,rgba(255,140,60,.09),transparent 12%,transparent 88%,rgba(255,140,60,.09)),
+    radial-gradient(120% 80% at 50% 50%,transparent 58%,rgba(0,0,0,.4) 100%);
+  transition:opacity .6s ease .3s}
+.film.done .gate::after{opacity:0}
 .film.busy .gate{animation:gateShake .62s cubic-bezier(.3,.7,.4,1)}
 @keyframes gateShake{0%,100%{transform:translateY(0)}
   18%{transform:translateY(-2px)}42%{transform:translateY(2px)}68%{transform:translateY(-1px)}}
-.film.busy .strip{filter:blur(1.6px)}
-.film .perf{position:absolute;left:0;right:0;height:9%;z-index:14;background:#08070b;
-  overflow:hidden}
+.film.busy .strip{filter:blur(1.8px)}
+/* 감기 중 셔터 플리커 */
+.film .flick{position:absolute;inset:0;z-index:16;background:#000;opacity:0;pointer-events:none}
+.film.busy .flick{animation:flick .1s steps(1) 14}
+@keyframes flick{0%,60%{opacity:0}61%,100%{opacity:.42}}
+.film .perf{position:absolute;left:0;right:0;height:9%;z-index:14;background:#08070b;overflow:hidden}
 .film .perf.t{top:0}.film .perf.b{bottom:0}
 .film .perf u{position:absolute;left:0;top:50%;display:flex;text-decoration:none;
   transform:translateY(-50%);will-change:transform}
 .film .perf u i{display:block;width:11px;height:8px;margin-right:13px;border-radius:2px;
   background:#e9e3f0;flex:0 0 auto}
-.film .lever{position:absolute;right:12px;bottom:15%;width:46px;height:46px;z-index:46;
-  border-radius:50%;border:2px solid #7a7091;background:radial-gradient(circle at 38% 32%,#332c40,#1c1826);
-  cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.5);
-  transition:transform .85s cubic-bezier(.25,.85,.3,1),opacity .4s}
-.film .lever::after{content:"";position:absolute;left:50%;top:6px;width:4px;height:16px;
-  margin-left:-2px;border-radius:2px;background:var(--accent)}
+.film .perf.t::after{content:"KODAK 400TX  ▸  SAFETY FILM";position:absolute;left:14px;top:1px;
+  color:#4a4159;font:600 6px/1 ui-monospace,monospace;letter-spacing:.2em}
+/* 레버 — 링 + 손잡이 */
+.film .lever{position:absolute;right:13px;bottom:15%;width:46px;height:46px;z-index:46;
+  border-radius:50%;background:radial-gradient(circle at 38% 32%,#3a3247,#1a1624);
+  box-shadow:0 0 0 2px #7a7091,0 4px 12px rgba(0,0,0,.6);cursor:pointer;
+  transition:transform .9s cubic-bezier(.25,.85,.3,1),opacity .4s}
+.film .lever::after{content:"";position:absolute;left:50%;top:5px;width:5px;height:17px;
+  margin-left:-2.5px;border-radius:3px;background:var(--accent);
+  box-shadow:0 0 7px rgba(255,127,156,.6)}
 .film.busy .lever{transform:rotate(1080deg)}
 .film.done .lever{opacity:0;pointer-events:none}
-.film .counter{position:absolute;right:12px;top:12%;z-index:46;color:#8e83a8;
-  font-size:11px;letter-spacing:.18em;transition:opacity .4s}
+.film .counter{position:absolute;right:13px;top:12%;z-index:46;color:#a094bd;
+  font:700 11px/1 ui-monospace,monospace;letter-spacing:.16em;
+  padding:4px 8px;border-radius:5px;background:rgba(10,8,14,.6);
+  border:1px solid rgba(255,255,255,.12);transition:opacity .4s}
 .film.done .counter{opacity:0}
-.film.done .gate{top:0;bottom:0;transition:top .6s ease .25s,bottom .6s ease .25s}
-.film.done .perf{opacity:0;transition:opacity .5s .25s}
+.film.done .gate{top:0;bottom:0;transition:top .65s ease .3s,bottom .65s ease .3s}
+.film.done .perf{opacity:0;transition:opacity .5s .3s}
 
 /* ─────────── gift ─────────── */
-.gift{background:#17131c}
-.gift .bg2{position:absolute;inset:0;z-index:13;background:#17131c;
-  transition:opacity .6s ease .25s}
-.gift.done .bg2{opacity:0;transition:opacity .5s ease .05s}
-.gift .base{position:absolute;left:3%;right:3%;top:30%;bottom:4%;z-index:14;overflow:hidden;
-  border-radius:3px 3px 6px 6px;
+.gift{background:linear-gradient(165deg,#221a28,#120e18)}
+.gift .bg2{position:absolute;inset:0;z-index:13;
+  background:linear-gradient(165deg,#221a28,#120e18);transition:opacity .55s ease .3s}
+.gift.done .bg2{opacity:0}
+/* 바닥 그림자 */
+.gift .shd{position:absolute;left:12%;right:12%;bottom:2%;height:5%;z-index:13;
+  border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.6),transparent 70%);
+  transition:opacity .5s}
+.gift.done .shd{opacity:0}
+.gift .base{position:absolute;left:4%;right:4%;top:30%;bottom:5%;z-index:14;overflow:hidden;
+  border-radius:3px 3px 7px 7px;
   background:linear-gradient(100deg,#b8637f 0 7%,#e79ab2 14%,#f0aec3 46%,#dd8ea8 78%,#b8637f);
-  box-shadow:0 10px 24px rgba(0,0,0,.5);
-  transition:transform .85s cubic-bezier(.5,0,.6,1) .12s,opacity .6s ease .3s}
-.gift .base::before{content:"";position:absolute;left:0;right:0;top:0;height:10px;
-  background:linear-gradient(rgba(0,0,0,.45),transparent)}
-.gift .base .rv{position:absolute;left:42%;width:16%;top:0;bottom:0;
-  background:linear-gradient(90deg,#d9a52f,#fff6d4 32%,#ffe08a 58%,#cf9c28)}
-.gift .lid{position:absolute;left:0;right:0;top:6%;height:26%;z-index:18;overflow:visible;
+  box-shadow:0 12px 26px rgba(0,0,0,.55);
+  transition:transform .85s cubic-bezier(.5,0,.6,1) .14s,opacity .6s ease .3s}
+/* 포장지 격자 무늬 */
+.gift .base::after,.gift .lid::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,rgba(255,255,255,.09) 0 1px,transparent 1px 11px),
+    repeating-linear-gradient(-45deg,rgba(255,255,255,.06) 0 1px,transparent 1px 11px)}
+.gift .base::before{content:"";position:absolute;left:0;right:0;top:0;height:11px;z-index:2;
+  background:linear-gradient(rgba(0,0,0,.5),transparent)}
+.gift .base .rv{position:absolute;left:42%;width:16%;top:0;bottom:0;z-index:3;
+  background:linear-gradient(90deg,#c99722,#fff6d4 30%,#ffe08a 56%,#c99722);
+  box-shadow:0 0 8px rgba(0,0,0,.2)}
+.gift .lid{position:absolute;left:0;right:0;top:5%;height:27%;z-index:18;
   border-radius:5px;transform-origin:50% 100%;
   background:linear-gradient(100deg,#c9758f 0 6%,#fbd2df 13%,#f7c4d3 48%,#e6a3b9 80%,#c9758f);
-  box-shadow:0 9px 18px rgba(0,0,0,.45),0 2px 0 rgba(255,255,255,.55) inset;
+  box-shadow:0 10px 20px rgba(0,0,0,.5),0 2px 0 rgba(255,255,255,.6) inset;
   transition:transform .9s cubic-bezier(.35,1.3,.5,1),opacity .55s ease .3s}
-.gift .lid::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22%;
-  background:linear-gradient(transparent,rgba(120,50,75,.35))}
-.gift .lid .rv{position:absolute;left:42%;width:16%;top:0;bottom:0;
-  background:linear-gradient(90deg,#d9a52f,#fff6d4 32%,#ffe08a 58%,#cf9c28)}
-.gift .lid .rh{position:absolute;left:0;right:0;top:34%;height:30%;
-  background:linear-gradient(#fff6d4,#ffe08a 55%,#d9a52f)}
-.gift .bow{position:absolute;left:50%;top:28%;width:46%;aspect-ratio:1/.66;z-index:22;
+.gift .lid b{position:absolute;left:0;right:0;bottom:0;height:24%;
+  background:linear-gradient(transparent,rgba(120,50,75,.4))}
+.gift .lid .rv{position:absolute;left:42%;width:16%;top:0;bottom:0;z-index:3;
+  background:linear-gradient(90deg,#c99722,#fff6d4 30%,#ffe08a 56%,#c99722)}
+.gift .lid .rh{position:absolute;left:0;right:0;top:34%;height:30%;z-index:3;
+  background:linear-gradient(#fff6d4,#ffe08a 55%,#c99722)}
+/* 선물 태그 */
+.gift .tag2{position:absolute;right:9%;top:36%;width:20%;aspect-ratio:1/1.35;z-index:19;
+  background:linear-gradient(160deg,#fdf6e6,#e9dcc2);border-radius:3px;
+  transform:rotate(9deg);box-shadow:0 4px 10px rgba(0,0,0,.4);
+  transition:transform .6s,opacity .5s}
+.gift .tag2::before{content:"";position:absolute;left:50%;top:9%;width:5px;height:5px;
+  margin-left:-2.5px;border-radius:50%;background:#b9a887}
+.gift .tag2::after{content:"To. ♡";position:absolute;left:0;right:0;top:42%;text-align:center;
+  font-size:10px;color:#8b7a5e}
+.gift.done .tag2{transform:rotate(38deg) translate(30px,60px);opacity:0}
+.gift .bow{position:absolute;left:50%;top:27%;width:46%;aspect-ratio:1/.66;z-index:22;
   transform:translate(-50%,-50%);cursor:grab;
   transition:transform .5s cubic-bezier(.4,1.4,.5,1)}
 .gift .bow svg{width:100%;height:100%;display:block;
-  filter:drop-shadow(0 3px 5px rgba(90,58,8,.45))}
-.gift.done .lid{transform:translateY(-150%) rotate(-16deg);opacity:0}
-.gift.done .base{transform:translateY(130%);opacity:0}
+  filter:drop-shadow(0 4px 6px rgba(70,44,6,.5))}
+.gift.done .lid{transform:translateY(-155%) rotate(-17deg);opacity:0}
+.gift.done .base{transform:translateY(135%);opacity:0}
 
 /* ─────────── gacha ─────────── */
-.gacha .hous{position:absolute;inset:0;z-index:12;
-  background:linear-gradient(#f8dbe6 0 52%,#e9536f 52% 100%);transition:opacity .6s}
-.gacha .hous::after{content:"";position:absolute;left:0;right:0;top:52%;height:5px;
-  background:rgba(0,0,0,.22)}
-.gacha .dome{position:absolute;left:7%;right:7%;top:5%;height:45%;z-index:14;
-  border-radius:50% 50% 12% 12%;
-  background:radial-gradient(circle at 33% 26%,rgba(255,255,255,.85),rgba(214,236,250,.45) 46%,rgba(150,186,214,.3));
-  border:2px solid rgba(255,255,255,.6);box-shadow:0 6px 18px rgba(0,0,0,.16);transition:opacity .6s}
-.gacha .balls{position:absolute;left:7%;right:7%;top:5%;height:45%;z-index:15;transition:opacity .6s}
-.gacha .balls i{position:absolute;width:17%;aspect-ratio:1/1;border-radius:50%;
-  box-shadow:inset -3px -4px 7px rgba(0,0,0,.22),0 1px 3px rgba(0,0,0,.2)}
-.gacha .tray{position:absolute;left:22%;right:22%;bottom:6%;height:15%;z-index:16;
-  border-radius:8px 8px 5px 5px;background:linear-gradient(#5d1626,#8d2740);
-  box-shadow:0 3px 8px rgba(0,0,0,.35) inset;transition:opacity .5s}
-.gacha .cap2{position:absolute;left:50%;top:58%;width:40%;aspect-ratio:1/1;z-index:48;
-  transform:translate(-50%,-190%) scale(.4);opacity:0;border-radius:50%;
+.gacha{background:linear-gradient(#20182a,#100c16)}
+.gacha .hous{position:absolute;left:4%;right:4%;top:3%;bottom:3%;z-index:12;
+  border-radius:14px 14px 10px 10px;
+  background:linear-gradient(#fbe4ec 0 50%,#e9536f 50% 100%);
+  box-shadow:0 14px 30px rgba(0,0,0,.6),0 2px 0 rgba(255,255,255,.5) inset;
+  transition:opacity .55s}
+.gacha .hous::after{content:"";position:absolute;left:0;right:0;top:50%;height:6px;
+  background:linear-gradient(#b8213c,#8d1730);box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.gacha .hous::before{content:"★ GACHA ★";position:absolute;left:0;right:0;top:53%;
+  text-align:center;font:800 10px/1 sans-serif;letter-spacing:.22em;color:#ffd9e2;
+  text-shadow:0 1px 3px rgba(120,10,35,.7)}
+.gacha .dome{position:absolute;left:11%;right:11%;top:7%;height:40%;z-index:14;
+  border-radius:50% 50% 10% 10%;
+  background:radial-gradient(circle at 32% 25%,rgba(255,255,255,.92),rgba(214,236,250,.42) 44%,rgba(150,186,214,.26));
+  border:2px solid rgba(255,255,255,.7);
+  box-shadow:0 8px 20px rgba(0,0,0,.2),0 -6px 16px rgba(255,255,255,.4) inset;
+  transition:opacity .55s}
+.gacha .balls{position:absolute;left:12%;right:12%;top:8%;height:38%;z-index:15;transition:opacity .55s}
+.gacha .balls i{position:absolute;width:19%;aspect-ratio:1/1;border-radius:50%;
+  box-shadow:inset -3px -4px 8px rgba(0,0,0,.26),inset 3px 4px 7px rgba(255,255,255,.5),
+    0 2px 4px rgba(0,0,0,.18)}
+.gacha .tray{position:absolute;left:26%;right:26%;bottom:8%;height:13%;z-index:16;
+  border-radius:7px 7px 5px 5px;background:linear-gradient(#4d0f1e,#7d1f36);
+  box-shadow:0 4px 10px rgba(0,0,0,.5) inset;transition:opacity .5s}
+.gacha .tray::after{content:"";position:absolute;left:8%;right:8%;top:-4px;height:5px;
+  border-radius:3px;background:rgba(0,0,0,.45)}
+.gacha .cap2{position:absolute;left:50%;top:50%;width:34%;aspect-ratio:1/1;z-index:48;
+  transform:translate(-50%,-190%) scale(.5);opacity:0;border-radius:50%;
   background:linear-gradient(#fff2f6 0 50%,var(--accent) 50% 100%);
-  box-shadow:0 6px 16px rgba(0,0,0,.4),-4px -5px 10px rgba(255,255,255,.5) inset}
+  box-shadow:0 6px 16px rgba(0,0,0,.45),-5px -6px 12px rgba(255,255,255,.55) inset}
+.gacha .cap2::after{content:"";position:absolute;left:0;right:0;top:48%;height:4%;
+  background:rgba(0,0,0,.16)}
 .gacha.busy .cap2{animation:drop .9s cubic-bezier(.35,1.5,.5,1) forwards}
 @keyframes drop{0%{transform:translate(-50%,-190%) scale(.5);opacity:0}
   18%{opacity:1}58%{transform:translate(-50%,10%) scale(1)}
   72%{transform:translate(-50%,-16%) scale(1.06)}86%{transform:translate(-50%,4%) scale(1);opacity:1}
   100%{transform:translate(-50%,0) scale(1);opacity:1}}
-.gacha .half{position:absolute;left:50%;top:58%;width:40%;height:20%;z-index:49;opacity:0;
-  transform:translate(-50%,0);transition:transform .7s cubic-bezier(.3,1,.3,1),opacity .5s}
-.gacha .half.up{border-radius:999px 999px 0 0;background:#fff2f6;margin-top:-20%}
-.gacha .half.dn{border-radius:0 0 999px 999px;background:var(--accent)}
+.gacha .half{position:absolute;left:50%;top:50%;width:34%;height:17%;z-index:49;opacity:0;
+  transform:translate(-50%,0)}
+.gacha .half.up{border-radius:999px 999px 0 0;background:#fff2f6;margin-top:-17%;
+  box-shadow:-4px -5px 10px rgba(255,255,255,.5) inset}
+.gacha .half.dn{border-radius:0 0 999px 999px;background:var(--accent);
+  box-shadow:4px 5px 10px rgba(0,0,0,.2) inset}
 .gacha.done .hous,.gacha.done .dome,.gacha.done .balls,
 .gacha.done .knob,.gacha.done .tray,.gacha.done .cap2{opacity:0}
 .gacha.done .half.up{animation:splitU 1s cubic-bezier(.25,.9,.3,1) forwards}
@@ -302,84 +395,128 @@ body{display:flex;align-items:center;justify-content:center;
   62%{opacity:1}100%{opacity:0;transform:translate(-50%,-300%) rotate(-32deg)}}
 @keyframes splitD{0%{opacity:1;transform:translate(-50%,0) rotate(0)}
   62%{opacity:1}100%{opacity:0;transform:translate(-50%,300%) rotate(28deg)}}
-.gacha .knob{position:absolute;left:50%;top:63%;width:22%;aspect-ratio:1/1;z-index:46;
+.gacha .knob{position:absolute;left:50%;top:62%;width:21%;aspect-ratio:1/1;z-index:46;
   transform:translateX(-50%);border-radius:50%;cursor:grab;
-  background:radial-gradient(circle at 38% 32%,#fff,#ddd6e6 52%,#a49bba);
-  box-shadow:0 4px 12px rgba(0,0,0,.4);transition:transform .75s cubic-bezier(.3,.9,.25,1),opacity .5s}
-.gacha .knob::after{content:"";position:absolute;left:50%;top:14%;width:10%;height:72%;
-  margin-left:-5%;border-radius:99px;background:#4b4459}
+  background:radial-gradient(circle at 36% 30%,#fff,#ddd6e6 50%,#9d94b4);
+  box-shadow:0 5px 13px rgba(0,0,0,.45),0 0 0 4px rgba(255,255,255,.5);
+  transition:transform .8s cubic-bezier(.3,.9,.25,1),opacity .5s}
+.gacha .knob::after{content:"";position:absolute;left:50%;top:16%;width:11%;height:68%;
+  margin-left:-5.5%;border-radius:99px;background:#463f54}
 .gacha.busy .knob{transform:translateX(-50%) rotate(180deg)}
 
 /* ─────────── parcel ─────────── */
+.parcel{background:#1a1420}
 .parcel .flap{position:absolute;top:0;bottom:0;width:50.4%;z-index:14;transform-origin:var(--o);
-  background:linear-gradient(168deg,#e0b98e,#c89d6b 48%,#b1875a);
-  transition:transform .9s cubic-bezier(.4,1.1,.4,1)}
+  background:linear-gradient(168deg,#e3bd93,#cba271 46%,#b58c5e);
+  transition:transform .95s cubic-bezier(.4,1.1,.4,1)}
+/* 골판지 결 + 종이 노이즈 */
 .parcel .flap::after{content:"";position:absolute;inset:0;
-  background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 2px,transparent 2px 9px)}
-.parcel .flap.l{left:0;--o:0% 50%;box-shadow:inset -14px 0 22px rgba(80,52,24,.3)}
-.parcel .flap.r{right:0;--o:100% 50%;box-shadow:inset 14px 0 22px rgba(80,52,24,.3)}
-.parcel.done .flap.l{transform:rotateY(-108deg)}
-.parcel.done .flap.r{transform:rotateY(108deg)}
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.055) 0 1px,transparent 1px 7px),
+    repeating-linear-gradient(0deg,rgba(120,86,48,.05) 0 2px,transparent 2px 5px)}
+.parcel .flap.l{left:0;--o:0% 50%;box-shadow:inset -16px 0 26px rgba(80,52,24,.34)}
+.parcel .flap.r{right:0;--o:100% 50%;box-shadow:inset 16px 0 26px rgba(80,52,24,.34)}
+.parcel.done .flap.l{transform:rotateY(-112deg)}
+.parcel.done .flap.r{transform:rotateY(112deg)}
+/* 배송 라벨 */
+.parcel .lbl{position:absolute;left:9%;top:12%;width:34%;z-index:15;padding:7px 8px;
+  background:#fdfaf2;border-radius:2px;transform:rotate(-2deg);
+  box-shadow:0 3px 8px rgba(60,38,14,.3);transition:opacity .4s}
+.parcel .lbl b{display:block;font:700 8px/1.5 ui-monospace,monospace;color:#6b5335;
+  letter-spacing:.1em}
+.parcel .lbl u{display:block;height:14px;margin-top:4px;text-decoration:none;
+  background:repeating-linear-gradient(90deg,#2c2118 0 2px,transparent 2px 4px,#2c2118 4px 5px,transparent 5px 8px)}
+.parcel .fragile{position:absolute;right:8%;top:14%;z-index:15;
+  font:800 9px/1 sans-serif;letter-spacing:.2em;color:#a8412f;
+  border:2px solid #a8412f;padding:4px 7px;border-radius:3px;transform:rotate(6deg);
+  opacity:.85;transition:opacity .4s}
+.parcel.done .lbl,.parcel.done .fragile{opacity:0}
 .parcel .tape{position:absolute;left:43%;width:14%;top:0;bottom:0;z-index:16;
-  background:linear-gradient(90deg,rgba(240,234,216,.55),rgba(248,244,232,.85),rgba(240,234,216,.55));
-  border-left:1px solid rgba(90,66,36,.2);border-right:1px solid rgba(90,66,36,.2);
-  box-shadow:0 0 10px rgba(255,255,255,.3);transition:opacity .5s}
-.parcel .tape::after{content:"FRAGILE";position:absolute;left:50%;top:34%;
-  transform:translateX(-50%) rotate(90deg);color:rgba(120,88,48,.5);
-  font-size:10px;letter-spacing:.3em;white-space:nowrap}
+  background:linear-gradient(90deg,rgba(226,214,186,.55),rgba(244,236,214,.85),rgba(226,214,186,.55));
+  border-left:1px solid rgba(90,66,36,.22);border-right:1px solid rgba(90,66,36,.22);
+  box-shadow:0 0 12px rgba(255,255,255,.28);transition:opacity .5s}
+.parcel .tape::before{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.3) 0 1px,transparent 1px 4px)}
 .parcel .cut{position:absolute;left:43%;width:14%;top:0;z-index:17;height:0;
-  background:linear-gradient(90deg,transparent,rgba(40,26,12,.75) 20% 80%,transparent)}
+  background:linear-gradient(90deg,transparent,rgba(38,24,10,.8) 22% 78%,transparent)}
+.parcel .cut::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:4px;
+  background:radial-gradient(ellipse at 50% 0,rgba(255,255,255,.5),transparent 70%)}
 .parcel.done .tape,.parcel.done .cut{opacity:0}
-.parcel .knife{position:absolute;left:50%;z-index:47;width:26px;height:26px;margin-left:-13px;
-  border-radius:5px;background:var(--accent);box-shadow:0 3px 10px rgba(0,0,0,.5);
-  transform:translateY(-50%) rotate(45deg);top:3%;transition:opacity .4s}
+.parcel .knife{position:absolute;left:50%;z-index:47;width:30px;height:30px;margin-left:-15px;
+  border-radius:6px;background:linear-gradient(140deg,#ff9db4,var(--accent));
+  box-shadow:0 4px 12px rgba(0,0,0,.6);transform:translateY(-50%) rotate(45deg);top:3%;
+  transition:opacity .4s}
+.parcel .knife::after{content:"";position:absolute;left:50%;top:50%;width:52%;height:8%;
+  transform:translate(-50%,-50%) rotate(-45deg);background:rgba(255,255,255,.85);border-radius:99px}
 .parcel.done .knife{opacity:0}
 
 /* ─────────── envelope ─────────── */
-.envelope{background:#191320}
+.envelope{background:linear-gradient(165deg,#221a26,#120e16)}
 .envelope .env{position:absolute;left:4%;right:4%;top:12%;bottom:12%;z-index:14;
-  border-radius:5px;background:linear-gradient(160deg,#fbf3e7,#eadcc7);
-  box-shadow:0 16px 34px rgba(0,0,0,.55);transition:opacity .5s,transform .6s}
+  border-radius:5px;background:linear-gradient(160deg,#fbf3e7,#e6d7c1);
+  box-shadow:0 18px 38px rgba(0,0,0,.6);transition:opacity .5s,transform .6s}
+/* 항공우편 테두리 */
+.envelope .env::after{content:"";position:absolute;inset:0;border-radius:5px;
+  border:5px solid transparent;
+  background:repeating-linear-gradient(45deg,#c9455e 0 9px,#fff 9px 18px,#3a63a8 18px 27px,#fff 27px 36px) border-box;
+  -webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;opacity:.55}
 .envelope .letter{position:absolute;left:9%;right:9%;top:16%;bottom:16%;z-index:16;
   overflow:hidden;background:#fffdf8;border-radius:3px;
-  box-shadow:0 10px 22px rgba(0,0,0,.4);transform:translateY(72%);
-  transition:transform .95s cubic-bezier(.3,.95,.3,1) .42s}
+  box-shadow:0 12px 26px rgba(0,0,0,.45);transform:translateY(72%);
+  transition:transform 1s cubic-bezier(.3,.95,.3,1) .45s}
 .envelope .letter img{width:100%;height:100%;object-fit:cover;display:block}
 .envelope.done .letter{transform:translateY(-14%)}
 .envelope.st2 .letter{left:0;right:0;top:0;bottom:0;transform:none;z-index:34;
   border-radius:var(--radius,18px);
   transition:left .55s ease,right .55s ease,top .55s ease,bottom .55s ease,
     transform .55s ease,border-radius .55s ease}
+.envelope .hide{position:absolute;left:0;right:0;bottom:0;height:13%;z-index:17;
+  background:#120e16;transition:opacity .4s}
 .envelope .pocket{position:absolute;left:4%;right:4%;top:12%;bottom:12%;z-index:18;
-  border-radius:5px;background:linear-gradient(165deg,#f3e8d8,#e2d0b7 62%,#d3bfa2);
+  border-radius:5px;background:linear-gradient(165deg,#f3e8d8,#e0cdb2 62%,#d0bb9c);
   clip-path:polygon(0 0,50% 44%,100% 0,100% 100%,0 100%);
   transition:opacity .5s .35s}
 .envelope .pocket::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(202deg,transparent 45.4%,rgba(150,116,78,.28) 46%,transparent 46.6%),
-             linear-gradient(-202deg,transparent 45.4%,rgba(150,116,78,.28) 46%,transparent 46.6%)}
+  background:linear-gradient(202deg,transparent 45.4%,rgba(150,116,78,.3) 46%,transparent 46.6%),
+             linear-gradient(-202deg,transparent 45.4%,rgba(150,116,78,.3) 46%,transparent 46.6%)}
 .envelope .flapE{position:absolute;left:4%;right:4%;top:12%;height:38%;z-index:19;
   transform-origin:50% 0;border-radius:5px 5px 0 0;
-  background:linear-gradient(#fdf7ee,#eee0cd 72%,#e0cdb4);
+  background:linear-gradient(#fdf7ee,#ede0cd 72%,#ddc9ae);
   clip-path:polygon(0 0,100% 0,50% 100%);
-  filter:drop-shadow(0 5px 7px rgba(90,66,42,.3));
-  transition:transform .8s cubic-bezier(.4,1.15,.45,1)}
+  filter:drop-shadow(0 6px 8px rgba(90,66,42,.34));
+  transition:transform .85s cubic-bezier(.4,1.15,.45,1)}
 .envelope.busy .flapE,.envelope.done .flapE{transform:rotateX(-176deg)}
-.envelope .stamp{position:absolute;right:11%;top:16%;width:17%;aspect-ratio:1/1.24;z-index:20;
-  background:repeating-linear-gradient(45deg,#e9c9d6 0 6px,#dbb4c5 6px 12px);
-  border:3px dashed rgba(255,255,255,.9);border-radius:2px;opacity:.9;
+/* 우표 — 톱니 테두리 */
+.envelope .stamp{position:absolute;right:10%;top:16%;width:18%;aspect-ratio:1/1.24;z-index:20;
+  background:
+    linear-gradient(150deg,rgba(255,255,255,.35),transparent 60%),
+    repeating-linear-gradient(45deg,#e9c9d6 0 7px,#d9aec2 7px 14px);
+  border-radius:2px;transition:opacity .4s;
+  filter:drop-shadow(0 2px 4px rgba(90,66,42,.35))}
+.envelope .stamp::before{content:"";position:absolute;inset:-3px;border-radius:3px;
+  background:#fdfaf4;z-index:-1;
+  -webkit-mask:radial-gradient(circle 3px at 0 0,transparent 98%,#000) 0 0/9px 9px;
+  mask:radial-gradient(circle 3px at 0 0,transparent 98%,#000) 0 0/9px 9px}
+.envelope .stamp::after{content:"♡";position:absolute;inset:0;display:grid;place-items:center;
+  font-size:15px;color:rgba(255,255,255,.75)}
+/* 소인 */
+.envelope .mark{position:absolute;right:6%;top:13%;width:26%;aspect-ratio:1/1;z-index:21;
+  border:2px solid rgba(70,90,140,.42);border-radius:50%;transform:rotate(-13deg);
   transition:opacity .4s}
+.envelope .mark::after{content:"SOOP";position:absolute;inset:0;display:grid;place-items:center;
+  font:700 8px/1 ui-monospace,monospace;letter-spacing:.1em;color:rgba(70,90,140,.42)}
 .envelope .seal{position:absolute;left:50%;top:41%;width:19%;aspect-ratio:1/1;z-index:22;
   transform:translate(-50%,-50%);border-radius:50%;cursor:pointer;
-  background:radial-gradient(circle at 36% 30%,#ffa9bd,var(--accent) 52%,#a82c4f);
-  box-shadow:0 4px 12px rgba(0,0,0,.45),0 -2px 5px rgba(255,255,255,.4) inset;
+  background:radial-gradient(circle at 34% 28%,#ffb0c2,var(--accent) 50%,#9e2749);
+  box-shadow:0 5px 14px rgba(0,0,0,.5),0 -2px 6px rgba(255,255,255,.42) inset;
   transition:transform .5s,opacity .45s}
+.envelope .seal::before{content:"";position:absolute;inset:14%;border-radius:50%;
+  border:1.5px dashed rgba(255,255,255,.42)}
 .envelope .seal::after{content:"♡";position:absolute;inset:0;display:grid;place-items:center;
-  color:rgba(255,255,255,.85);font-size:17px}
-.envelope.busy .seal,.envelope.done .seal{opacity:0;transform:translate(-50%,-50%) scale(1.8) rotate(26deg)}
-.envelope .hide{position:absolute;left:0;right:0;bottom:0;height:13%;z-index:17;
-  background:#191320;transition:opacity .4s}
+  color:rgba(255,255,255,.88);font-size:16px}
+.envelope.busy .seal,.envelope.done .seal{opacity:0;transform:translate(-50%,-50%) scale(1.85) rotate(28deg)}
 .envelope.st2 .pocket,.envelope.st2 .flapE,.envelope.st2 .env,
-.envelope.st2 .stamp,.envelope.st2 .hide{opacity:0}
+.envelope.st2 .stamp,.envelope.st2 .mark,.envelope.st2 .hide{opacity:0}
 
 /* ─────────── curtain ─────────── */
 .curtain .pan{position:absolute;top:0;bottom:0;width:52%;z-index:14;
@@ -418,29 +555,82 @@ body{display:flex;align-items:center;justify-content:center;
 .blackout.done .veil{opacity:0}
 
 /* ─────────── unlock ─────────── */
-.unlock .veilU{position:absolute;inset:0;z-index:14;
-  background:linear-gradient(160deg,#221d2e,#0c0a11);
-  transition:transform .85s cubic-bezier(.5,0,.2,1),opacity .6s}
-.unlock .veilU::after{content:"";position:absolute;left:50%;top:34%;width:54px;height:54px;
-  margin-left:-27px;border-radius:14px;border:3px solid rgba(255,255,255,.16);
-  box-shadow:0 -16px 0 -8px rgba(255,255,255,.16) inset}
+.unlock{background:#08070c}
+/* 잠금화면 배경 — 사진을 흐리게 깐 유리 */
+.unlock .veilU{position:absolute;inset:0;z-index:14;overflow:hidden;
+  background:linear-gradient(165deg,#241f30,#0d0b12);
+  transition:transform .9s cubic-bezier(.5,0,.2,1),opacity .6s}
+.unlock .veilU .bgimg{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;
+  filter:blur(24px) brightness(.44) saturate(.75);transform:scale(1.06)}
+.unlock .veilU::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(120% 80% at 50% 12%,rgba(255,255,255,.09),transparent 55%),
+    linear-gradient(transparent 40%,rgba(6,5,10,.72))}
 .unlock.done .veilU{transform:translateY(-101%);opacity:0}
-.unlock .track{position:absolute;left:9%;right:9%;bottom:12%;height:52px;z-index:16;
-  border-radius:999px;background:rgba(255,255,255,.09);
-  border:1px solid rgba(255,255,255,.18);overflow:hidden;transition:opacity .4s}
+/* 시계 */
+.unlock .clock{position:absolute;left:0;right:0;top:13%;z-index:16;text-align:center;
+  color:#fff;transition:opacity .5s,transform .6s}
+.unlock .clock b{display:block;font:200 46px/1 -apple-system,system-ui,sans-serif;
+  letter-spacing:-.02em;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.unlock .clock s{display:block;text-decoration:none;margin-top:6px;font-size:12.5px;
+  color:rgba(255,255,255,.72);letter-spacing:.02em}
+.unlock.done .clock{opacity:0;transform:translateY(-14px)}
+/* 자물쇠 */
+.unlock .lockIco{position:absolute;left:50%;top:6%;z-index:17;width:26px;height:22px;
+  margin-left:-13px;border-radius:5px;background:rgba(255,255,255,.9);
+  transition:opacity .4s,transform .4s}
+.unlock .lockIco::before{content:"";position:absolute;left:50%;top:-11px;width:16px;height:16px;
+  margin-left:-8px;border:3px solid rgba(255,255,255,.9);border-radius:8px 8px 0 0;
+  border-bottom:0;transition:transform .45s cubic-bezier(.3,1.5,.4,1)}
+.unlock .lockIco::after{content:"";position:absolute;left:50%;top:42%;width:4px;height:7px;
+  margin-left:-2px;border-radius:2px;background:#2a2336}
+.unlock.opening .lockIco::before{transform:translateX(5px) rotate(22deg)}
+.unlock.opening .lockIco{transform:scale(1.12)}
+.unlock.done .lockIco{opacity:0}
+/* 알림 카드 */
+.unlock .noti{position:absolute;left:8%;right:8%;top:36%;z-index:17;
+  padding:11px 13px;border-radius:14px;display:flex;gap:10px;align-items:center;
+  background:rgba(255,255,255,.13);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 8px 22px rgba(0,0,0,.4);
+  animation:notiIn .7s cubic-bezier(.3,1.3,.4,1) .35s both;
+  transition:opacity .45s,transform .55s}
+@keyframes notiIn{from{opacity:0;transform:translateY(16px) scale(.96)}}
+.unlock .noti em{font-style:normal;width:30px;height:30px;border-radius:8px;flex:0 0 auto;
+  display:grid;place-items:center;font-size:16px;
+  background:linear-gradient(140deg,#ffb0c2,var(--accent))}
+.unlock .noti span{min-width:0}
+.unlock .noti b{display:block;font-size:12.5px;font-weight:700;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unlock .noti s{display:block;text-decoration:none;font-size:11px;color:rgba(255,255,255,.66);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unlock.done .noti{opacity:0;transform:translateY(-10px) scale(.97)}
+/* 슬라이드 트랙 */
+.unlock .track{position:absolute;left:8%;right:8%;bottom:11%;height:56px;z-index:18;
+  border-radius:99px;background:rgba(255,255,255,.11);
+  border:1px solid rgba(255,255,255,.19);overflow:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,.35);transition:opacity .4s}
 .unlock .track span{position:absolute;inset:0;display:grid;place-items:center;
-  font-size:12.5px;letter-spacing:.1em;padding-left:24px;
-  background:linear-gradient(90deg,rgba(255,255,255,.16) 25%,rgba(255,255,255,.8) 50%,rgba(255,255,255,.16) 75%);
+  font-size:12.5px;letter-spacing:.1em;padding-left:26px;
+  background:linear-gradient(90deg,rgba(255,255,255,.18) 25%,rgba(255,255,255,.88) 50%,rgba(255,255,255,.18) 75%);
   background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
-  animation:shine 2.6s linear infinite}
+  animation:shine 2.4s linear infinite}
 @keyframes shine{to{background-position:-220% 0}}
-.unlock .grab{position:absolute;left:3px;top:3px;bottom:3px;width:46px;z-index:17;
-  border-radius:999px;background:var(--accent);cursor:grab;
-  box-shadow:0 3px 9px rgba(0,0,0,.45);transition:transform .1s linear}
+/* 지나간 자리에 채워지는 빛 */
+.unlock .track .fillx{position:absolute;left:0;top:0;bottom:0;width:0;
+  background:linear-gradient(90deg,rgba(255,127,156,.45),rgba(255,127,156,.12));
+  transition:width .1s linear}
+.smooth .track .fillx{transition:width .45s cubic-bezier(.3,.9,.25,1)}
+.unlock .grab{position:absolute;left:3px;top:3px;bottom:3px;width:50px;z-index:19;
+  border-radius:99px;background:#fff;cursor:grab;
+  box-shadow:0 3px 10px rgba(0,0,0,.45);transition:transform .1s linear}
 .smooth .grab{transition:transform .45s cubic-bezier(.3,.9,.25,1)}
-.unlock .grab::after{content:"→";position:absolute;inset:0;display:grid;place-items:center;
-  color:#3a0f1c;font-weight:800;font-size:17px}
+.unlock .grab::after{content:"›";position:absolute;inset:0;display:grid;place-items:center;
+  color:#2a2336;font-weight:800;font-size:22px;line-height:1}
+.unlock .grab::before{content:"";position:absolute;inset:0;border-radius:99px;
+  box-shadow:0 0 0 0 rgba(255,255,255,.5);animation:pulseG 2s ease-out infinite}
+@keyframes pulseG{70%,100%{box-shadow:0 0 0 12px rgba(255,255,255,0)}}
 .unlock.done .track{opacity:0}
+.unlock .hint{bottom:auto;top:64%}
 
 /* ─────────── origami ─────────── */
 .origami .fold{position:absolute;inset:0;z-index:14;transform-style:preserve-3d;
@@ -467,21 +657,61 @@ body{display:flex;align-items:center;justify-content:center;
 .origami.done .step{opacity:0}
 
 /* ─────────── snowglobe ─────────── */
-.snowglobe{background:#0a0d18}
-.snowglobe .prize{filter:blur(7px) brightness(.7) saturate(.7);transition:filter 1.1s ease}
-.snowglobe.done .prize{filter:none}
-.snowglobe .glass{position:absolute;inset:0;z-index:18;pointer-events:none;
-  background:radial-gradient(circle at 31% 22%,rgba(255,255,255,.4),transparent 40%),
-    radial-gradient(circle at 50% 46%,transparent 54%,rgba(8,12,26,.72) 88%);
+.snowglobe{background:radial-gradient(120% 90% at 50% 20%,#1b2440,#080b16)}
+/* 구슬 안쪽으로만 사진을 가두는 원형 마스크 */
+.snowglobe .orb{position:absolute;left:6%;right:6%;top:4%;z-index:14;aspect-ratio:1/1;
+  border-radius:50%;overflow:hidden;
+  box-shadow:0 22px 44px rgba(0,0,0,.6),0 0 0 2px rgba(255,255,255,.16);
+  transition:border-radius .9s ease .35s,left .9s ease .35s,right .9s ease .35s,
+    top .9s ease .35s,height .9s ease .35s,box-shadow .9s ease .35s}
+.snowglobe .orb img{width:100%;height:100%;object-fit:cover;display:block;
+  filter:blur(8px) brightness(.62) saturate(.66);transition:filter 1.2s ease}
+.snowglobe.done .orb{left:0;right:0;top:0;aspect-ratio:auto;height:100%;
+  border-radius:var(--radius,18px);box-shadow:none}
+.snowglobe.done .orb img{filter:none}
+/* 유리 굴절 + 하이라이트 */
+.snowglobe .glass{position:absolute;inset:0;z-index:20;pointer-events:none;border-radius:50%;
+  background:
+    radial-gradient(circle at 30% 20%,rgba(255,255,255,.62),transparent 26%),
+    radial-gradient(circle at 68% 76%,rgba(190,220,255,.3),transparent 22%),
+    radial-gradient(circle at 50% 50%,transparent 56%,rgba(10,16,34,.5) 78%,rgba(6,10,24,.85) 100%);
   transition:opacity 1s ease}
-.snowglobe.done .glass{opacity:.42}
-.snowglobe .flakes{position:absolute;inset:0;z-index:16;pointer-events:none}
-.snowglobe .flakes i{position:absolute;border-radius:50%;background:#fff;opacity:.9;
-  filter:drop-shadow(0 0 4px rgba(200,230,255,.9))}
-.snowglobe .stand{position:absolute;left:14%;right:14%;bottom:0;height:11%;z-index:19;
-  border-radius:10px 10px 0 0;background:linear-gradient(#6b4a2e,#3d2917);
-  box-shadow:0 -3px 10px rgba(0,0,0,.5);transition:opacity .8s ease .3s}
-.snowglobe.done .stand{opacity:0}
+.snowglobe.done .glass{opacity:0}
+.snowglobe .flakes{position:absolute;inset:0;z-index:18;pointer-events:none;overflow:hidden;
+  border-radius:50%;transition:border-radius .9s ease .35s}
+.snowglobe.done .flakes{border-radius:var(--radius,18px)}
+.snowglobe .flakes i{position:absolute;border-radius:50%;background:#fff;
+  filter:drop-shadow(0 0 4px rgba(200,230,255,.95))}
+/* 나무 받침대 */
+.snowglobe .stand{position:absolute;left:11%;right:11%;bottom:2%;height:15%;z-index:22;
+  border-radius:8px 8px 12px 12px;
+  background:linear-gradient(#8a5f38 0 14%,#6b4526 14% 62%,#4a2f18);
+  box-shadow:0 -4px 12px rgba(0,0,0,.55),0 8px 20px rgba(0,0,0,.5),
+    0 2px 0 rgba(255,255,255,.18) inset;
+  transition:opacity .7s ease .25s,transform .7s ease .25s}
+.snowglobe .stand::before{content:"";position:absolute;left:-3%;right:-3%;top:-6px;height:12px;
+  border-radius:50%/60%;background:linear-gradient(#a3743f,#7a5129)}
+.snowglobe .stand b{position:absolute;left:14%;right:14%;top:44%;height:34%;border-radius:3px;
+  background:linear-gradient(#d8b378,#b8894c);
+  box-shadow:0 1px 3px rgba(0,0,0,.4) inset}
+.snowglobe .stand b::after{content:attr(data-t);position:absolute;inset:0;
+  display:grid;place-items:center;font:700 8px/1 sans-serif;letter-spacing:.14em;
+  color:#5c3d1c;white-space:nowrap;overflow:hidden}
+.snowglobe.done .stand{opacity:0;transform:translateY(24px)}
+/* 흔들기 게이지 */
+.snowglobe .shk{position:absolute;left:50%;bottom:20%;transform:translateX(-50%);z-index:34;
+  display:flex;align-items:center;gap:8px;padding:6px 13px;border-radius:99px;
+  background:rgba(8,12,26,.6);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.2);transition:opacity .4s;white-space:nowrap}
+.snowglobe .shk span{font-size:11.5px;color:#e6eef8}
+.snowglobe .shk u{display:block;width:62px;height:4px;border-radius:99px;
+  background:rgba(255,255,255,.22);overflow:hidden}
+.snowglobe .shk u i{display:block;height:100%;width:0;border-radius:99px;
+  background:linear-gradient(90deg,#bfe4ff,#fff);transition:width .12s linear}
+.snowglobe.done .shk{opacity:0}
+.snowglobe.wob .orb{animation:orbwob .34s ease-in-out infinite}
+@keyframes orbwob{0%,100%{transform:translateX(0) rotate(0)}
+  25%{transform:translateX(-5px) rotate(-.7deg)}75%{transform:translateX(5px) rotate(.7deg)}}
 
 /* ─────────── slot ─────────── */
 .slot{background:linear-gradient(#2c1033,#150818)}
@@ -541,34 +771,81 @@ body{display:flex;align-items:center;justify-content:center;
 
 /* ─────────── scan ─────────── */
 /* ※ .dark 는 z-index 0 — 사진(1)보다 아래. 위에 두면 영원히 검은 화면이 됨 */
-.scan{background:#070911}
+.scan{background:#050710}
 .scan .prize{clip-path:inset(0 0 100% 0);transition:clip-path .12s linear}
-.scan.busy .prize{transition:clip-path 1.6s linear}
+.scan.busy .prize{transition:clip-path 1.9s linear}
 .scan.done .prize{clip-path:inset(0)}
-.scan .dark{position:absolute;inset:0;z-index:0;background:#070911;
+.scan .dark{position:absolute;inset:0;z-index:0;background:#050710;
   background-image:
-    repeating-linear-gradient(0deg,rgba(90,255,190,.07) 0 1px,transparent 1px 6px),
+    repeating-linear-gradient(0deg,rgba(90,255,190,.075) 0 1px,transparent 1px 6px),
     repeating-linear-gradient(90deg,rgba(90,255,190,.05) 0 1px,transparent 1px 26px)}
-.scan .br{position:absolute;inset:0;z-index:20;pointer-events:none;transition:opacity .5s}
-.scan .br i{position:absolute;width:28px;height:28px;border:2px solid #7dffcf;
-  box-shadow:0 0 12px rgba(90,255,190,.6)}
-.scan .br i:nth-child(1){left:7%;top:6%;border-right:0;border-bottom:0}
-.scan .br i:nth-child(2){right:7%;top:6%;border-left:0;border-bottom:0}
-.scan .br i:nth-child(3){left:7%;bottom:6%;border-right:0;border-top:0}
-.scan .br i:nth-child(4){right:7%;bottom:6%;border-left:0;border-top:0}
+/* 아직 스캔 안 된 영역의 와이어프레임 */
+.scan .wire{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(60% 40% at 50% 34%,rgba(90,255,190,.11),transparent 70%),
+    repeating-linear-gradient(45deg,rgba(90,255,190,.045) 0 1px,transparent 1px 14px);
+  transition:opacity .6s ease}
+.scan.done .wire{opacity:0}
+/* 노이즈 스캔라인 오버레이 */
+.scan .crt{position:absolute;inset:0;z-index:21;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.32) 0 1px,transparent 1px 3px);
+  transition:opacity .7s ease}
+.scan.done .crt{opacity:0}
+/* 코너 브래킷 — 스캔 중 수축 */
+.scan .br{position:absolute;inset:0;z-index:20;pointer-events:none;
+  transition:opacity .5s,transform .5s cubic-bezier(.3,1.2,.4,1)}
+.scan .br i{position:absolute;width:30px;height:30px;border:2px solid #7dffcf;
+  box-shadow:0 0 14px rgba(90,255,190,.65)}
+.scan .br i:nth-child(1){left:6%;top:5%;border-right:0;border-bottom:0;border-radius:4px 0 0 0}
+.scan .br i:nth-child(2){right:6%;top:5%;border-left:0;border-bottom:0;border-radius:0 4px 0 0}
+.scan .br i:nth-child(3){left:6%;bottom:5%;border-right:0;border-top:0;border-radius:0 0 0 4px}
+.scan .br i:nth-child(4){right:6%;bottom:5%;border-left:0;border-top:0;border-radius:0 0 4px 0}
+.scan.busy .br{transform:scale(.955)}
 .scan.done .br{opacity:0}
-.scan .line{position:absolute;left:0;right:0;top:0;height:3px;z-index:22;opacity:0;
-  background:#7dffcf;box-shadow:0 0 18px 6px rgba(90,255,190,.8)}
-.scan.busy .line{animation:scanline 1.6s linear forwards}
+/* 스캔 라인 — 헤드 + 잔광 꼬리 */
+.scan .line{position:absolute;left:0;right:0;top:0;height:2px;z-index:24;opacity:0;
+  background:#c9ffe9;box-shadow:0 0 20px 7px rgba(90,255,190,.85)}
+.scan .line::after{content:"";position:absolute;left:0;right:0;top:-58px;height:58px;
+  background:linear-gradient(transparent,rgba(90,255,190,.3))}
+.scan.busy .line{animation:scanline 1.9s linear forwards}
 @keyframes scanline{0%{opacity:1;top:0}97%{opacity:1}100%{top:100%;opacity:0}}
-.scan .pctT{position:absolute;left:0;right:0;bottom:9%;z-index:23;text-align:center;
-  color:#7dffcf;font-size:12px;letter-spacing:.22em;opacity:.9;transition:opacity .4s}
+/* 스캔 통과 지점 좌우 눈금 */
+.scan .ticks{position:absolute;inset:0;z-index:22;pointer-events:none;opacity:0;
+  transition:opacity .4s}
+.scan.busy .ticks{opacity:1}
+.scan .ticks i{position:absolute;width:9px;height:2px;background:#7dffcf;
+  box-shadow:0 0 8px rgba(90,255,190,.8)}
+.scan .ticks i:first-child{left:0}.scan .ticks i:last-child{right:0}
+.scan.done .ticks{opacity:0}
+/* HUD */
+.scan .hud2{position:absolute;inset:0;z-index:23;pointer-events:none;
+  font:600 9px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;
+  color:#7dffcf;text-shadow:0 0 8px rgba(90,255,190,.6);transition:opacity .5s}
+.scan .hud2 .tl2{position:absolute;left:8%;top:9%}
+.scan .hud2 .tr2{position:absolute;right:8%;top:9%;text-align:right}
+.scan .hud2 .bl2{position:absolute;left:8%;bottom:9%}
+.scan.done .hud2{opacity:0}
+/* 진행 바 */
+.scan .pctT{position:absolute;left:8%;right:8%;bottom:15%;z-index:23;text-align:center;
+  color:#7dffcf;font:700 11px/1 ui-monospace,monospace;letter-spacing:.2em;
+  transition:opacity .4s}
+.scan .pctT u{display:block;height:3px;margin-top:7px;border-radius:99px;
+  background:rgba(125,255,207,.2);overflow:hidden}
+.scan .pctT u i{display:block;height:100%;width:0;background:#7dffcf;border-radius:99px;
+  box-shadow:0 0 9px rgba(90,255,190,.9)}
 .scan.done .pctT{opacity:0}
+/* 완료 체크 */
 .scan .tick{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.4);z-index:34;
-  font-size:52px;color:#7dffcf;opacity:0;text-shadow:0 0 24px rgba(90,255,190,.95)}
-.scan.done .tick{animation:tk .95s cubic-bezier(.3,1.5,.4,1) forwards}
-@keyframes tk{30%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}
-  72%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.3)}}
+  font-size:54px;color:#7dffcf;opacity:0;text-shadow:0 0 26px rgba(90,255,190,.95)}
+.scan.done .tick{animation:tk 1s cubic-bezier(.3,1.5,.4,1) forwards}
+@keyframes tk{28%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}
+  70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.32)}}
+/* 완료 플래시 링 */
+.scan.done .ringF{animation:ringF .75s cubic-bezier(.3,.9,.4,1)}
+.ringF{position:absolute;inset:0;z-index:33;pointer-events:none;border-radius:inherit}
+@keyframes ringF{0%{box-shadow:0 0 0 4px rgba(125,255,207,.85) inset}
+  100%{box-shadow:0 0 0 0 rgba(125,255,207,0) inset}}
+
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.14s!important}}
 </style>
@@ -662,14 +939,19 @@ function shake(el,need,onProg,onDone){
 }
 
 /* ══════════ 닦아내기 엔진 ══════════ */
-function wipeFx({paint,pre,label,noHint}){ return {
+function wipeFx({paint,pre,label,noHint,crumb,brush}){ return {
   cls:'wipe',
-  html: () => `${prize()}${cap}<canvas id="cv"></canvas>${noHint?'':hint(label,true)}`,
+  html: () => `${prize()}${cap}<canvas id="cv"></canvas>
+    <div class="prog"><svg viewBox="0 0 32 32"><circle class="bgc" cx="16" cy="16" r="14"/>
+    <circle class="fgc" cx="16" cy="16" r="14"/></svg><b>0%</b></div>
+    ${noHint?'':hint(label,true)}`,
   init(){
     if(pre) card.style.setProperty('--pre',pre);
     const cv=card.querySelector('#cv'), dpr=Math.min(devicePixelRatio||1,2);
+    const ring=card.querySelector('.prog .fgc'), pnum=card.querySelector('.prog b');
     let ctx,W,H,grid,cnt,drawing=false,lx,ly,sid=null;
-    const GW=18,GH=24,total=GW*GH;
+    const GW=20,GH=26,total=GW*GH;
+
     function setup(){
       W=cv.width=Math.round(card.clientWidth*dpr); H=cv.height=Math.round(card.clientHeight*dpr);
       ctx=cv.getContext('2d'); grid=new Array(total); cnt=0;
@@ -680,13 +962,51 @@ function wipeFx({paint,pre,label,noHint}){ return {
         ctx.drawImage(im,W/2-im.width*f/2,H/2-im.height*f/2,im.width*f,im.height*f); } };
         im.src=cfg.cover; }
     }
-    function mark(x,y){ const R=W*.085,cx=Math.floor(x/W*GW),cy=Math.floor(y/H*GH),rr=Math.ceil(R/(W/GW));
+    function progress(){
+      const r=Math.min(1,(cnt/total)/cfg.pct);
+      ring.style.strokeDashoffset = (88*(1-r)).toFixed(1);
+      pnum.textContent = Math.round(r*100)+'%';
+    }
+    function mark(x,y){
+      const R=W*.082,cx=Math.floor(x/W*GW),cy=Math.floor(y/H*GH),rr=Math.ceil(R/(W/GW));
       for(let i=cx-rr;i<=cx+rr;i++)for(let j=cy-rr;j<=cy+rr;j++){
         if(i<0||j<0||i>=GW||j>=GH)continue; const k=j*GW+i; if(!grid[k]){grid[k]=1;cnt++;} }
-      if(!finished&&cnt/total>cfg.pct) finish(); }
-    function draw(x,y){ ctx.globalCompositeOperation='destination-out';
-      ctx.lineWidth=W*.17; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#000';
-      ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke(); lx=x; ly=y; mark(x,y); }
+      progress();
+      if(!finished&&cnt/total>cfg.pct) finish(18);
+    }
+    // 부스러기 튀기기
+    let lastCrumb=0;
+    function fleck(cx,cy){
+      if(!crumb) return;
+      const now=Date.now(); if(now-lastCrumb<46) return; lastCrumb=now;
+      if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const r=cv.getBoundingClientRect(), sc=r.width/W;
+      for(let i=0;i<2;i++){
+        const el=document.createElement('span'); el.className='crumb';
+        const d=1.6+Math.random()*3.4;
+        el.style.cssText+=`left:${cx*sc}px;top:${cy*sc}px;width:${d}px;height:${d*(.6+Math.random()*.8)}px;`+
+          `background:${crumb[(Math.random()*crumb.length)|0]}`;
+        card.appendChild(el);
+        const a=Math.random()*6.283, dist=14+Math.random()*30;
+        el.animate([{transform:'translate(-50%,-50%) rotate(0)',opacity:.95},
+          {transform:`translate(calc(-50% + ${Math.cos(a)*dist}px),calc(-50% + ${Math.sin(a)*dist+16}px)) rotate(${Math.random()*260-130}deg)`,opacity:0}],
+          {duration:420+Math.random()*380,easing:'cubic-bezier(.2,.7,.4,1)'}).onfinish=()=>el.remove();
+      }
+    }
+    function draw(x,y){
+      ctx.globalCompositeOperation='destination-out';
+      const w=W*(brush||.165);
+      ctx.lineWidth=w; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#000';
+      ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke();
+      // 가장자리를 톱니처럼 — 매끈한 선이 아니라 문지른 자국처럼
+      for(let i=0;i<3;i++){
+        const t=Math.random(), px=lx+(x-lx)*t, py=ly+(y-ly)*t;
+        ctx.beginPath();
+        ctx.arc(px+(Math.random()-.5)*w*.9, py+(Math.random()-.5)*w*.9,
+                w*(.2+Math.random()*.3),0,7); ctx.fill();
+      }
+      lx=x; ly=y; mark(x,y); fleck(x,y);
+    }
     const pos=e=>{ const r=cv.getBoundingClientRect();
       return [(e.clientX-r.left)*W/Math.max(1,r.width),(e.clientY-r.top)*H/Math.max(1,r.height)]; };
     cv.addEventListener('pointerdown',e=>{ if(drawing)return; sid=e.pointerId; drawing=true;
@@ -695,11 +1015,12 @@ function wipeFx({paint,pre,label,noHint}){ return {
     cv.addEventListener('pointermove',e=>{ if(drawing&&e.pointerId===sid){const p=pos(e);draw(p[0],p[1]);} });
     const up=e=>{ if(e.pointerId===sid){drawing=false;sid=null;} };
     cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
-    setup(); let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(!finished)setup();},250);});
-    return ()=>finish();
+    setup(); progress();
+    let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(!finished)setup();},250);});
+    return ()=>finish(18);
   }};
 }
-/* 둥근 사각 경로 (구버전 사파리 roundRect 없음 대비) */
+/* 둥근 사각 경로/* 둥근 사각 경로 (구버전 사파리 roundRect 없음 대비) */
 function rrect(c,x,y,w,h,r){ c.beginPath();
   c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
   c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
@@ -707,80 +1028,126 @@ function rrect(c,x,y,w,h,r){ c.beginPath();
 /* ══════════════════ 효과 정의 ══════════════════ */
 const FX = {
 
-/* 복권 — 파스텔 홀로 스크래치 패널 (은박 아님) */
-scratch: wipeFx({ noHint:true,
+/* 복권 — 파스텔 홀로 패널 + 티켓 천공 + 일련번호 */
+scratch: wipeFx({ noHint:true, brush:.155, crumb:['#e7d7f5','#cfe6f7','#ffe2d0','#f8d4e8'],
   paint(c,W,H){
-    const S=W/370;                                   // 기준 스케일
+    const S=W/370;
     const bg=c.createLinearGradient(0,0,W,H);
-    bg.addColorStop(0,'#d9c4f5'); bg.addColorStop(.32,'#bfe0f7');
-    bg.addColorStop(.58,'#b6ecdd'); bg.addColorStop(.82,'#ffe1cd'); bg.addColorStop(1,'#f7cbe4');
+    bg.addColorStop(0,'#d9c4f5'); bg.addColorStop(.3,'#bfe0f7');
+    bg.addColorStop(.56,'#b6ecdd'); bg.addColorStop(.8,'#ffe1cd'); bg.addColorStop(1,'#f7cbe4');
     c.fillStyle=bg; c.fillRect(0,0,W,H);
-    // 미세 도트 그리드
-    const step=9*S;
-    for(let y=step;y<H;y+=step) for(let x=(y/step%2?step/2:0);x<W;x+=step){
-      c.fillStyle='rgba(255,255,255,.42)'; c.beginPath(); c.arc(x,y,1.1*S,0,7); c.fill(); }
-    // 대각 광택 밴드
+    // 미세 도트
+    const st=9*S;
+    for(let y=st;y<H;y+=st) for(let x=(y/st%2?st/2:0);x<W;x+=st){
+      c.fillStyle='rgba(255,255,255,.4)'; c.beginPath(); c.arc(x,y,1.1*S,0,7); c.fill(); }
+    // 대각 광택
     c.save(); c.translate(W/2,H/2); c.rotate(-.5); c.translate(-W/2,-H/2);
-    [[-.18,.16],[.42,.1]].forEach(([p,w])=>{
+    [[-.2,.15],[.4,.09]].forEach(([p,w])=>{
       const gl=c.createLinearGradient(0,H*p,0,H*(p+w));
-      gl.addColorStop(0,'rgba(255,255,255,0)'); gl.addColorStop(.5,'rgba(255,255,255,.5)');
-      gl.addColorStop(1,'rgba(255,255,255,0)');
-      c.fillStyle=gl; c.fillRect(-W,H*p,W*3,H*w); });
+      gl.addColorStop(0,'rgba(255,255,255,0)'); gl.addColorStop(.5,'rgba(255,255,255,.52)');
+      gl.addColorStop(1,'rgba(255,255,255,0)'); c.fillStyle=gl; c.fillRect(-W,H*p,W*3,H*w); });
     c.restore();
-    // 안쪽 점선 프레임
-    c.setLineDash([7*S,6*S]); c.lineWidth=1.6*S; c.strokeStyle='rgba(255,255,255,.85)';
-    rrect(c,W*.07,H*.05,W*.86,H*.9,14*S); c.stroke(); c.setLineDash([]);
-    // 흩뿌린 별
-    c.font=`${12*S}px sans-serif`; c.textAlign='center'; c.textBaseline='middle';
-    for(let i=0;i<22;i++){ c.fillStyle=`rgba(255,255,255,${.35+Math.random()*.5})`;
-      c.save(); c.translate(W*.1+Math.random()*W*.8,H*.09+Math.random()*H*.82);
+    // 기요셰 물결선 (지폐 위조방지 무늬)
+    c.strokeStyle='rgba(255,255,255,.34)'; c.lineWidth=.9*S;
+    for(let k=0;k<9;k++){ c.beginPath();
+      for(let x=0;x<=W;x+=6*S){
+        const y=H*.5 + Math.sin(x/W*6.6 + k*.7)*H*(.06+k*.028) + (k-4)*H*.055;
+        x===0?c.moveTo(x,y):c.lineTo(x,y); }
+      c.stroke(); }
+    // 티켓 천공선
+    c.save(); c.globalCompositeOperation='destination-out';
+    for(let x=W*.055;x<W*.95;x+=12*S){ c.beginPath(); c.arc(x,H*.148,2.4*S,0,7); c.fill(); }
+    c.restore();
+    c.strokeStyle='rgba(120,92,150,.3)'; c.lineWidth=1*S; c.setLineDash([3*S,4*S]);
+    c.beginPath(); c.moveTo(W*.04,H*.148); c.lineTo(W*.96,H*.148); c.stroke(); c.setLineDash([]);
+    // 점선 프레임
+    c.setLineDash([7*S,6*S]); c.lineWidth=1.6*S; c.strokeStyle='rgba(255,255,255,.88)';
+    rrect(c,W*.06,H*.185,W*.88,H*.75,13*S); c.stroke(); c.setLineDash([]);
+    // 별
+    c.textAlign='center'; c.textBaseline='middle'; c.font=`${12*S}px sans-serif`;
+    for(let i=0;i<20;i++){ c.fillStyle=`rgba(255,255,255,${.32+Math.random()*.5})`;
+      c.save(); c.translate(W*.1+Math.random()*W*.8,H*.22+Math.random()*H*.68);
       c.rotate(Math.random()*1.2-.6); c.fillText('✦',0,0); c.restore(); }
-    // 중앙 라벨
-    const cy=H*.5;
-    c.fillStyle='rgba(255,255,255,.55)'; rrect(c,W*.16,cy-H*.085,W*.68,H*.17,12*S); c.fill();
-    c.strokeStyle='rgba(120,90,150,.28)'; c.lineWidth=1.4*S; c.stroke();
-    c.fillStyle='rgba(126,92,158,.85)'; c.font=`700 ${11*S}px sans-serif`;
-    c.letterSpacing && (c.letterSpacing=`${3*S}px`);
-    c.fillText('S C R A T C H   H E R E',W/2,cy-H*.032);
-    c.letterSpacing && (c.letterSpacing='0px');
+    // 상단 라벨
+    c.fillStyle='rgba(88,62,116,.72)'; c.font=`700 ${9.5*S}px ui-monospace,monospace`;
+    c.fillText('L U C K Y   T I C K E T',W/2,H*.085);
+    // 중앙 라벨 박스
+    const cy=H*.53;
+    c.fillStyle='rgba(255,255,255,.58)'; rrect(c,W*.15,cy-H*.088,W*.7,H*.176,12*S); c.fill();
+    c.strokeStyle='rgba(120,90,150,.3)'; c.lineWidth=1.4*S; c.stroke();
+    c.fillStyle='rgba(126,92,158,.85)'; c.font=`700 ${10.5*S}px ui-monospace,monospace`;
+    c.fillText('S C R A T C H   H E R E',W/2,cy-H*.034);
     c.fillStyle='#4f3a63'; c.font=`800 ${19*S}px sans-serif`;
     c.fillText(cfg.label||'긁어서 확인하기',W/2,cy+H*.042);
+    // 하단 일련번호
+    c.fillStyle='rgba(88,62,116,.5)'; c.font=`${8.5*S}px ui-monospace,monospace`;
+    c.fillText('NO. '+String(Date.now()%900000+100000),W/2,H*.965);
   }}),
 
-frost: wipeFx({ label:'✋ 문질러서 닦기', pre:'blur(9px) brightness(.85) saturate(.75)',
-  paint(c,W,H){ const S=W/370;
+/* 성에 — 서리 결정 + 물방울 + 가장자리 결빙 */
+frost: wipeFx({ label:'✋ 문질러서 닦기', pre:'blur(10px) brightness(.84) saturate(.7)',
+  brush:.18, crumb:['#ffffff','#e6f4fc','#cfe8f7'],
+  paint(c,W,H){
+    const S=W/370;
     const lg=c.createLinearGradient(0,0,W,H);
-    lg.addColorStop(0,'rgba(224,240,250,.98)'); lg.addColorStop(.45,'rgba(198,226,242,.95)');
-    lg.addColorStop(1,'rgba(216,236,248,.97)'); c.fillStyle=lg; c.fillRect(0,0,W,H);
-    // 가장자리 결빙 진하게
-    const vg=c.createRadialGradient(W/2,H/2,W*.2,W/2,H/2,W*.8);
-    vg.addColorStop(0,'rgba(255,255,255,0)'); vg.addColorStop(1,'rgba(255,255,255,.85)');
+    lg.addColorStop(0,'rgba(226,241,251,.98)'); lg.addColorStop(.45,'rgba(200,227,243,.95)');
+    lg.addColorStop(1,'rgba(218,237,249,.97)'); c.fillStyle=lg; c.fillRect(0,0,W,H);
+    const vg=c.createRadialGradient(W/2,H*.45,W*.16,W/2,H*.45,W*.82);
+    vg.addColorStop(0,'rgba(255,255,255,0)'); vg.addColorStop(1,'rgba(255,255,255,.9)');
     c.fillStyle=vg; c.fillRect(0,0,W,H);
-    for(let i=0;i<130;i++){ const x=Math.random()*W,y=Math.random()*H,r=(Math.random()*22+7)*S;
-      c.strokeStyle=`rgba(255,255,255,${Math.random()*.55+.3})`; c.lineWidth=(Math.random()*1.3+.5)*S;
-      for(let k=0;k<6;k++){ const a=k*Math.PI/3+Math.random()*.2;
-        const ex=x+Math.cos(a)*r, ey=y+Math.sin(a)*r;
-        c.beginPath(); c.moveTo(x,y); c.lineTo(ex,ey);
-        c.moveTo(x+Math.cos(a)*r*.55,y+Math.sin(a)*r*.55);
-        c.lineTo(x+Math.cos(a+.5)*r*.8,y+Math.sin(a+.5)*r*.8);
-        c.moveTo(x+Math.cos(a)*r*.55,y+Math.sin(a)*r*.55);
-        c.lineTo(x+Math.cos(a-.5)*r*.8,y+Math.sin(a-.5)*r*.8); c.stroke(); } }
-    for(let i=0;i<70;i++){ c.fillStyle=`rgba(255,255,255,${Math.random()*.4})`;
-      c.beginPath(); c.arc(Math.random()*W,Math.random()*H,Math.random()*13*S+2,0,7); c.fill(); } } }),
+    // 육각 결정 (가지치기 2단계)
+    for(let i=0;i<95;i++){
+      const x=Math.random()*W,y=Math.random()*H,r=Math.pow(Math.random(),1.7)*30*S+4*S,rot=Math.random()*1.05;
+      c.strokeStyle=`rgba(255,255,255,${Math.random()*.55+.32})`;
+      c.lineWidth=(Math.random()*1.2+.45)*S;
+      for(let k=0;k<6;k++){ const a=k*Math.PI/3+rot;
+        c.beginPath(); c.moveTo(x,y); c.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r);
+        for(const t of [.4,.68]){
+          const bx=x+Math.cos(a)*r*t, by=y+Math.sin(a)*r*t, bl=r*(.34-t*.16);
+          c.moveTo(bx,by); c.lineTo(bx+Math.cos(a+.62)*bl,by+Math.sin(a+.62)*bl);
+          c.moveTo(bx,by); c.lineTo(bx+Math.cos(a-.62)*bl,by+Math.sin(a-.62)*bl); }
+        c.stroke(); } }
+    // 흘러내린 물방울
+    for(let i=0;i<16;i++){
+      const x=Math.random()*W, y=Math.random()*H*.8, len=(18+Math.random()*70)*S, w=(2+Math.random()*3.4)*S;
+      const dg=c.createLinearGradient(x,y,x,y+len);
+      dg.addColorStop(0,'rgba(255,255,255,.5)'); dg.addColorStop(1,'rgba(255,255,255,0)');
+      c.fillStyle=dg; c.fillRect(x-w/2,y,w,len);
+      c.fillStyle='rgba(255,255,255,.62)'; c.beginPath(); c.arc(x,y+len,w*.85,0,7); c.fill(); }
+    for(let i=0;i<60;i++){ c.fillStyle=`rgba(255,255,255,${Math.random()*.42})`;
+      c.beginPath(); c.arc(Math.random()*W,Math.random()*H,Math.random()*11*S+1.6,0,7); c.fill(); }
+  }}),
 
-dust: wipeFx({ label:'🧽 먼지를 닦아내세요', pre:'sepia(.5) saturate(.55) brightness(.8)',
-  paint(c,W,H){ const S=W/370;
+/* 먼지 — 얼룩 + 입자 + 거미줄 + 스크래치 */
+dust: wipeFx({ label:'🧽 먼지를 닦아내세요', pre:'sepia(.55) saturate(.5) brightness(.78)',
+  brush:.2, crumb:['#8a7357','#6d5a42','#a89070','#5a4a36'],
+  paint(c,W,H){
+    const S=W/370;
     const lg=c.createLinearGradient(0,0,W,H);
-    lg.addColorStop(0,'rgba(158,140,112,.95)'); lg.addColorStop(.5,'rgba(126,110,86,.93)');
-    lg.addColorStop(1,'rgba(166,148,120,.96)'); c.fillStyle=lg; c.fillRect(0,0,W,H);
-    for(let i=0;i<30;i++){ c.fillStyle=`rgba(92,78,58,${Math.random()*.28+.06})`;
-      c.beginPath(); c.ellipse(Math.random()*W,Math.random()*H,(Math.random()*52+16)*S,
-        (Math.random()*40+12)*S,Math.random()*3,0,7); c.fill(); }
-    for(let i=0;i<1400;i++){ c.fillStyle=`rgba(${60+Math.random()*95|0},${50+Math.random()*72|0},${40+Math.random()*52|0},${Math.random()*.55})`;
+    lg.addColorStop(0,'rgba(160,142,114,.96)'); lg.addColorStop(.5,'rgba(126,110,86,.94)');
+    lg.addColorStop(1,'rgba(168,150,122,.97)'); c.fillStyle=lg; c.fillRect(0,0,W,H);
+    for(let i=0;i<34;i++){ c.fillStyle=`rgba(92,78,58,${Math.random()*.3+.06})`;
+      c.beginPath(); c.ellipse(Math.random()*W,Math.random()*H,(Math.random()*54+16)*S,
+        (Math.random()*42+12)*S,Math.random()*3,0,7); c.fill(); }
+    for(let i=0;i<1700;i++){
+      c.fillStyle=`rgba(${58+Math.random()*98|0},${48+Math.random()*74|0},${38+Math.random()*54|0},${Math.random()*.58})`;
       c.fillRect(Math.random()*W,Math.random()*H,Math.random()*2.6*S+.5,Math.random()*2.6*S+.5); }
-    for(let i=0;i<24;i++){ c.strokeStyle=`rgba(215,205,185,${Math.random()*.22+.05})`;
-      c.lineWidth=Math.random()*1.5*S+.3; const x=Math.random()*W,y=Math.random()*H;
-      c.beginPath(); c.moveTo(x,y); c.lineTo(x+(Math.random()-.5)*W*.4,y+(Math.random()-.5)*H*.3); c.stroke(); } } }),
+    // 모서리 거미줄
+    c.strokeStyle='rgba(226,218,200,.26)'; c.lineWidth=.85*S;
+    [[0,0,1,1],[W,0,-1,1]].forEach(([ox,oy,sx])=>{
+      const R=W*.3;
+      for(let k=0;k<6;k++){ const a=k*Math.PI/12+.1;
+        c.beginPath(); c.moveTo(ox,oy); c.lineTo(ox+sx*Math.cos(a)*R,oy+Math.sin(a)*R); c.stroke(); }
+      for(let r=R*.3;r<R;r+=R*.22){ c.beginPath();
+        for(let k=0;k<=6;k++){ const a=k*Math.PI/12+.1;
+          const px=ox+sx*Math.cos(a)*r, py=oy+Math.sin(a)*r;
+          k===0?c.moveTo(px,py):c.lineTo(px,py); }
+        c.stroke(); } });
+    // 유리 스크래치
+    for(let i=0;i<22;i++){ c.strokeStyle=`rgba(222,212,192,${Math.random()*.24+.06})`;
+      c.lineWidth=Math.random()*1.4*S+.3; const x=Math.random()*W,y=Math.random()*H;
+      c.beginPath(); c.moveTo(x,y); c.lineTo(x+(Math.random()-.5)*W*.42,y+(Math.random()-.5)*H*.3); c.stroke(); }
+  }}),
 
 camera: {
   html: () => `${prize()}<div class="bokeh"></div>
@@ -827,103 +1194,121 @@ camera: {
 polaroid: {
   html: () => `<div class="frame">
       <div class="win"><img src="${IMG}" alt=""></div>
-      <div class="memo">${esc(cfg.title||'')}</div></div><div class="slot"></div>
-    ${hint('흔들어서 현상하기',false)}<div class="bar"><i></i></div>
+      <div class="memo">${esc(cfg.title||'')}</div></div>
+    <div class="body3"><i></i><b>SX-70</b></div>
+    <div class="shk"><span>흔들어서 현상</span><u><i></i></u></div>
     ${cfg.sub?`<div class="cap"><p>${esc(cfg.sub)}</p></div>`:''}`,
   init(){
-    const im=card.querySelector('.win img'), bar=card.querySelector('.bar i');
-    const dev=p=>{ im.style.transition='filter .18s linear'; bar.style.width=(p*100)+'%';
-      im.style.filter=`brightness(${.22+p*.82}) contrast(${.35+p*.67}) sepia(${.75-p*.75}) blur(${4-p*4}px)`; };
-    shake(card,2200,dev,()=>{ im.style.transition='filter .8s ease'; im.style.filter='none'; finish(18); });
-    return ()=>{ bar.style.width='100%'; im.style.transition='filter 1.2s ease'; im.style.filter='none'; finish(18); }; } },
+    const im=card.querySelector('.win img'), win=card.querySelector('.win');
+    const bar=card.querySelector('.shk i'), lbl=card.querySelector('.shk span');
+    let shakeT=null;
+    const dev=p=>{
+      im.style.transition='filter .18s linear';
+      bar.style.width=(p*100)+'%';
+      win.style.setProperty('--devo',(1-p).toFixed(2));
+      im.style.filter=`brightness(${.18+p*.86}) contrast(${.3+p*.72}) sepia(${.8-p*.8}) blur(${5-p*5}px)`;
+      lbl.textContent = p<.3?'흔들어서 현상' : p<.7?'현상 중…' : '거의 다 됐어요';
+      card.classList.add('shaking');
+      clearTimeout(shakeT); shakeT=setTimeout(()=>card.classList.remove('shaking'),260);
+    };
+    shake(card,2300,dev,()=>{
+      card.classList.remove('shaking');
+      win.style.setProperty('--devo','0');
+      im.style.transition='filter .85s ease'; im.style.filter='none'; finish(20);
+    });
+    return ()=>{ bar.style.width='100%'; win.style.setProperty('--devo','0');
+      im.style.transition='filter 1.2s ease'; im.style.filter='none'; finish(20); }; } },
 
 film: {
   html: () => {
-    const blanks = [1,2,3,4,5].map(i=>`<div class="fr blank" data-n="0${i}"></div>`).join('');
-    return `<div class="gate"><div class="strip">${blanks}<div class="fr"><img src="${IMG}" alt=""></div></div></div>
+    const blanks=[1,2,3,4,5].map(i=>`<div class="fr blank" data-n="0${i}"></div>`).join('');
+    return `<div class="gate"><div class="strip">${blanks}<div class="fr"><img src="${IMG}" alt=""></div></div>
+      <div class="flick"></div></div>
       <div class="perf t"><u></u></div><div class="perf b"><u></u></div>${cap}
-      <div class="counter">05 ▸ 06</div>${hint('레버를 감아 다음 컷으로',true)}
+      <div class="counter">01</div>${hint('레버를 감아 다음 컷으로',true)}
       <div class="lever" aria-label="필름 감기"></div>`;
   },
   init(){
     const strip=card.querySelector('.strip'), N=6;
     strip.style.setProperty('--fw', card.clientWidth+'px');
-    strip.style.width = (card.clientWidth*N)+'px';
-    // 퍼포레이션 구멍을 넉넉히 채워 스트립과 함께 흐르게
+    strip.style.width=(card.clientWidth*N)+'px';
     card.querySelectorAll('.perf u').forEach(u=>{
-      u.innerHTML = '<i></i>'.repeat(Math.ceil(card.clientWidth/24)*N + 8); });
+      u.innerHTML='<i></i>'.repeat(Math.ceil(card.clientWidth/24)*N+8); });
     const cnt=card.querySelector('.counter');
     function wind(){
       if(finished) return;
       card.classList.add('busy');
-      const dist = card.clientWidth*(N-1);
-      strip.style.transition='transform 1.45s cubic-bezier(.22,.72,.15,1)';
+      const dist=card.clientWidth*(N-1);
+      strip.style.transition='transform 1.5s cubic-bezier(.22,.72,.15,1)';
       strip.style.transform=`translateX(-${dist}px)`;
       card.querySelectorAll('.perf u').forEach((u,i)=>{
-        u.style.transition='transform 1.45s cubic-bezier(.22,.72,.15,1)';
-        u.style.transform=`translateY(-50%) translateX(-${dist*(i?1.05:.95)}px)`; });
+        u.style.transition='transform 1.5s cubic-bezier(.22,.72,.15,1)';
+        u.style.transform=`translateY(-50%) translateX(-${dist*(i?1.06:.94)}px)`; });
       let f=1; const iv=setInterval(()=>{ f=Math.min(N,f+1);
-        cnt.textContent=`0${Math.min(N,f)} ▸ 06`; if(f>=N) clearInterval(iv); },230);
-      setTimeout(()=>{ card.classList.remove('busy'); finish(16); },1480);
+        cnt.textContent='0'+f; if(f>=N) clearInterval(iv); },235);
+      setTimeout(()=>{ card.classList.remove('busy'); finish(16); },1530);
     }
     card.querySelector('.lever').addEventListener('click',e=>{e.stopPropagation();wind();});
     card.addEventListener('click',wind); return wind; } },
 
 gift: {
-  html: () => `${prize()}${cap}
-    <div class="bg2"></div>
+  html: () => `${prize()}${cap}<div class="bg2"></div><div class="shd"></div>
     <div class="base"><div class="rv"></div></div>
-    <div class="lid"><div class="rv"></div><div class="rh"></div></div>
-    <div class="bow">${BOW}</div>
+    <div class="lid"><div class="rv"></div><div class="rh"></div><b></b></div>
+    <div class="tag2"></div><div class="bow">${BOW}</div>
     ${hint('리본을 당겨보세요',true)}`,
   init(){
     const bow=card.querySelector('.bow'), lid=card.querySelector('.lid');
     drag(bow,{axis:'y',span:()=>card.clientHeight*.26,
-      onMove:p=>{ bow.style.transform=`translate(-50%,${-50+p*34}%) rotate(${p*36}deg) scale(${1-p*.12})`;
-        lid.style.transform=`translateY(${-p*7}%) rotate(${p*2.5}deg)`; },
-      onDone:()=>{ bow.style.transition='transform .55s ease,opacity .4s';
-        bow.style.transform='translate(-50%,-190%) rotate(58deg) scale(.7)';
-        bow.style.opacity='0'; lid.style.transform='';
-        finish(26,['#ffd76b','#fff','#ffb3c7',cfg.accent]); },
+      onMove:p=>{ bow.style.transform=`translate(-50%,${-50+p*34}%) rotate(${p*38}deg) scale(${1-p*.1})`;
+        lid.style.transform=`translateY(${-p*8}%) rotate(${p*2.6}deg)`; },
+      onDone:()=>{ bow.style.transition='transform .6s ease,opacity .45s';
+        bow.style.transform='translate(-50%,-210%) rotate(62deg) scale(.68)'; bow.style.opacity='0';
+        lid.style.transform=''; finish(28,['#ffd76b','#fff','#ffb3c7',cfg.accent]); },
       onCancel:()=>{ lid.style.transform=''; }});
-    return ()=>{ bow.style.transition='transform .5s ease,opacity .35s';
-      bow.style.transform='translate(-50%,-190%) rotate(58deg)'; bow.style.opacity='0';
-      finish(26,['#ffd76b','#fff','#ffb3c7',cfg.accent]); }; } },
+    return ()=>{ bow.style.transition='transform .5s ease,opacity .4s';
+      bow.style.transform='translate(-50%,-210%) rotate(62deg)'; bow.style.opacity='0';
+      finish(28,['#ffd76b','#fff','#ffb3c7',cfg.accent]); }; } },
 
 gacha: {
   html: () => `${prize()}${cap}<div class="hous"></div><div class="dome"></div><div class="balls"></div>
     <div class="tray"></div><div class="cap2"></div><div class="half up"></div><div class="half dn"></div>
     ${hint('손잡이를 돌리세요',false)}<div class="knob" aria-label="레버"></div>`,
   init(){
-    const b=card.querySelector('.balls'), cols=['#ff9db4','#ffd76b','#9ad8ff','#c9a7ff','#a8e6a1','#ffb37a'];
-    const spots=[[10,30],[32,14],[56,12],[76,30],[18,56],[42,40],[64,48],[80,62],[36,68],[58,72]];
+    const b=card.querySelector('.balls');
+    const cols=['#ff9db4','#ffd76b','#9ad8ff','#c9a7ff','#a8e6a1','#ffb37a','#ff8fa8','#8fe0d0'];
+    const spots=[[6,34],[27,17],[50,10],[72,20],[8,62],[30,45],[52,38],[74,50],[26,74],[52,68],[72,78]];
     spots.forEach((s,i)=>{ const el=document.createElement('i');
-      el.style.left=s[0]+'%'; el.style.top=s[1]+'%'; el.style.background=cols[i%6]; b.appendChild(el); });
+      el.style.left=s[0]+'%'; el.style.top=s[1]+'%';
+      el.style.background=`radial-gradient(circle at 34% 28%,#fff,${cols[i%8]} 62%)`;
+      b.appendChild(el); });
     function turn(){ if(finished)return; card.classList.add('busy');
-      setTimeout(()=>finish(22,cols),1500); }
+      setTimeout(()=>finish(24,cols),1500); }
     card.querySelector('.knob').addEventListener('click',e=>{e.stopPropagation();turn();});
     card.addEventListener('click',turn); return turn; } },
 
 parcel: {
   html: () => `${prize()}${cap}<div class="flap l"></div><div class="flap r"></div>
+    <div class="lbl"><b>TO. ${esc((cfg.title||'YOU').slice(0,12))}</b><u></u></div>
+    <div class="fragile">FRAGILE</div>
     <div class="tape"></div><div class="cut"></div><div class="knife"></div>
     ${hint('테이프를 따라 그어주세요',true)}`,
   init(){
     const cut=card.querySelector('.cut'), knife=card.querySelector('.knife');
     drag(card,{axis:'y',span:()=>card.clientHeight*.7,
       onMove:p=>{ cut.style.height=(p*100)+'%'; knife.style.top=(3+p*90)+'%'; },
-      thresh:.6, onDone:()=>finish(18,['#e8e2d2','#d9b184','#fff',cfg.accent]) });
-    return ()=>finish(18); } },
+      thresh:.6, onDone:()=>finish(20,['#e8e2d2','#d9b184','#fff',cfg.accent]) });
+    return ()=>finish(20); } },
 
 envelope: {
   html: () => `<div class="env"></div><div class="letter"><img src="${IMG}" alt=""></div>${cap}
-    <div class="hide"></div><div class="pocket"></div><div class="stamp"></div><div class="flapE"></div>
+    <div class="hide"></div><div class="pocket"></div>
+    <div class="stamp"></div><div class="mark"></div><div class="flapE"></div>
     <div class="seal" aria-label="봉투 열기"></div>${hint('씰을 눌러 열기',false)}`,
   init(){
     function open(){ if(finished)return; card.classList.add('busy');
-      setTimeout(()=>finish(20,['#ffb3c7','#fff','#ffd76b',cfg.accent]),520);
-      // 편지가 봉투 밖으로 다 나온 뒤에야 카드 전체를 채우도록 2단계 분리
-      setTimeout(()=>card.classList.add('st2'),1700); }
+      setTimeout(()=>finish(22,['#ffb3c7','#fff','#ffd76b',cfg.accent]),540);
+      setTimeout(()=>card.classList.add('st2'),1750); }
     card.querySelector('.seal').addEventListener('click',e=>{e.stopPropagation();open();});
     card.addEventListener('click',open); return open; } },
 
@@ -959,15 +1344,39 @@ blackout: {
     return ()=>{ card.classList.add('smooth'); v.style.clipPath='inset(0 0 0 105%)'; finish(16); }; } },
 
 unlock: {
-  html: () => `${prize()}${cap}<div class="veilU"></div>
-    <div class="track"><span>${esc(cfg.label||'밀어서 열기')}</span><div class="grab"></div></div>`,
+  html: () => {
+    const d=new Date();
+    const hh=d.getHours(), ampm=hh<12?'오전':'오후', h12=hh%12||12;
+    const day=['일','월','화','수','목','금','토'][d.getDay()];
+    return `${prize()}${cap}
+      <div class="veilU"><img class="bgimg" src="${IMG}" alt=""></div>
+      <div class="lockIco"></div>
+      <div class="clock"><b>${h12}:${String(d.getMinutes()).padStart(2,'0')}</b>
+        <s>${ampm} · ${d.getMonth()+1}월 ${d.getDate()}일 ${day}요일</s></div>
+      <div class="noti"><em>💌</em><span>
+        <b>${esc(cfg.title||'새 방셀이 도착했어요')}</b>
+        <s>${esc(cfg.sub||'밀어서 확인하기')}</s></span></div>
+      <div class="track"><div class="fillx"></div>
+        <span>${esc(cfg.label||'밀어서 열기')}</span><div class="grab"></div></div>`;
+  },
   init(){
     const track=card.querySelector('.track'), grab=card.querySelector('.grab');
-    drag(grab,{span:()=>track.clientWidth-52,thresh:.85,
-      onMove:p=>{ grab.style.transform=`translateX(${p*(track.clientWidth-52)}px)`; },
-      onDone:()=>{ grab.style.transform=`translateX(${track.clientWidth-52}px)`; finish(16); },
-      onCancel:()=>{ grab.style.transform='translateX(0)'; }});
-    return ()=>finish(16); } },
+    const fill=card.querySelector('.fillx');
+    const span=()=>track.clientWidth-56;
+    drag(grab,{span,thresh:.82,
+      onMove:p=>{ const x=p*span();
+        grab.style.transform=`translateX(${x}px)`;
+        fill.style.width=(x+50)+'px';
+        card.classList.toggle('opening',p>.35); },
+      onDone:()=>{ card.classList.add('opening');
+        grab.style.transform=`translateX(${span()}px)`;
+        fill.style.width='100%';
+        setTimeout(()=>finish(18,['#fff','#ffd2dd',cfg.accent,'#cfe8ff']),180); },
+      onCancel:()=>{ card.classList.remove('opening');
+        grab.style.transform='translateX(0)'; fill.style.width='0'; }});
+    return ()=>{ card.classList.add('opening','smooth');
+      grab.style.transform=`translateX(${span()}px)`; fill.style.width='100%';
+      setTimeout(()=>finish(18,['#fff','#ffd2dd',cfg.accent,'#cfe8ff']),300); }; } },
 
 origami: {
   html: () => `${prize()}${cap}<div class="fold f1"></div><div class="fold f2"></div>
@@ -982,31 +1391,50 @@ origami: {
     card.addEventListener('click',next); return next; } },
 
 snowglobe: {
-  html: () => `${prize()}${cap}<div class="flakes"></div><div class="glass"></div><div class="stand"></div>
-    ${hint('흔들어보세요',true)}`,
+  html: () => `${cap}
+    <div class="orb"><img src="${IMG}" alt=""><div class="flakes"></div><div class="glass"></div></div>
+    <div class="stand"><b data-t="${esc((cfg.title||'SNOW GLOBE').slice(0,14))}"></b></div>
+    <div class="shk"><span>흔들어보세요</span><u><i></i></u></div>`,
   init(){
     const box=card.querySelector('.flakes'), fl=[];
-    for(let i=0;i<58;i++){ const s=document.createElement('i');
-      const d=2+Math.random()*5; s.style.width=s.style.height=d+'px';
-      s.style.left=(Math.random()*96)+'%'; box.appendChild(s);
-      fl.push({el:s,y:Math.random()*100,v:.045+Math.random()*.1,sw:Math.random()*6.28}); }
-    let energy=0;
+    // 크기별 3개 층 — 큰 눈은 앞에서 빠르게, 작은 눈은 뒤에서 느리게
+    for(let i=0;i<66;i++){
+      const s=document.createElement('i');
+      const layer=i%3, d=[1.6,2.8,4.6][layer]+Math.random()*1.8;
+      s.style.width=s.style.height=d+'px';
+      s.style.left=(Math.random()*98)+'%';
+      s.style.opacity=[.45,.72,.96][layer];
+      box.appendChild(s);
+      fl.push({el:s, y:Math.random()*100, v:[.028,.05,.082][layer]+Math.random()*.03,
+               sw:Math.random()*6.28, amp:[1.6,3,4.6][layer]});
+    }
+    let energy=0, wobT=null;
     (function loop(){
-      energy*=.978;                       // 흔든 힘은 서서히 가라앉고
+      energy*=.9835;
       fl.forEach(f=>{
-        f.y += f.v*(1+energy*5) - energy*f.v*14;   // 에너지가 있으면 위로 솟구침
-        f.sw += .04 + energy*.05;
-        if(f.y>102) f.y=-3; if(f.y<-5) f.y=101;
+        f.y += f.v*(1+energy*4.5) - energy*f.v*16;   // 흔들면 위로 솟구침
+        f.sw += .035 + energy*.06;
+        if(f.y>103) f.y=-3; if(f.y<-5) f.y=102;
         f.el.style.top=f.y+'%';
-        f.el.style.transform=`translateX(${Math.sin(f.sw)*(2.5+energy*11)}px)`;
+        f.el.style.transform=`translateX(${Math.sin(f.sw)*(f.amp+energy*13)}px)`;
       });
-      requestAnimationFrame(loop);        // 완료 뒤에도 계속 — 잔잔히 내림
+      requestAnimationFrame(loop);            // 완료 후에도 계속 — 잔잔히 내림
     })();
-    const im=card.querySelector('.prize');
-    shake(card,1800,p=>{ energy=Math.max(energy,p);
-      im.style.filter=`blur(${7-p*7}px) brightness(${.7+p*.3}) saturate(${.7+p*.3})`; },
-      ()=>{ im.style.filter=''; finish(24,['#fff','#dff0ff','#bfe4ff',cfg.accent]); });
-    return ()=>{ energy=1; im.style.filter=''; finish(24,['#fff','#dff0ff','#bfe4ff']); }; } },
+    const im=card.querySelector('.orb img');
+    const bar=card.querySelector('.shk i'), lbl=card.querySelector('.shk span');
+    shake(card,2000,p=>{
+      energy=Math.max(energy,p);
+      bar.style.width=(p*100)+'%';
+      lbl.textContent = p<.35?'흔들어보세요' : p<.75?'조금만 더!' : '거의 다 됐어요';
+      im.style.filter=`blur(${8-p*8}px) brightness(${.62+p*.38}) saturate(${.66+p*.34})`;
+      card.classList.add('wob');
+      clearTimeout(wobT); wobT=setTimeout(()=>card.classList.remove('wob'),240);
+    },()=>{
+      card.classList.remove('wob'); im.style.filter='';
+      finish(26,['#fff','#dff0ff','#bfe4ff',cfg.accent]);
+    });
+    return ()=>{ energy=1; bar.style.width='100%'; im.style.filter='';
+      finish(26,['#fff','#dff0ff','#bfe4ff']); }; } },
 
 slot: {
   html: () => `${prize()}${cap}<div class="cab"></div>
@@ -1053,18 +1481,35 @@ holo: {
     return ()=>{ tilt(.06); setTimeout(()=>tilt(.94),420); }; } },
 
 scan: {
-  html: () => `<div class="dark"></div>${prize()}${cap}
+  html: () => `<div class="dark"></div>${prize()}<div class="wire"></div>${cap}
     <div class="br"><i></i><i></i><i></i><i></i></div>
-    <div class="line"></div><div class="pctT">READY</div><div class="tick">✓</div>
+    <div class="ticks"><i></i><i></i></div>
+    <div class="hud2"><span class="tl2">SCAN&nbsp;MODE<br>${esc(cfg.meta||'AUTO')}</span>
+      <span class="tr2">${esc(cfg.lens||'SOOP-01')}<br>RGB&nbsp;24BIT</span>
+      <span class="bl2">TARGET&nbsp;LOCKED</span></div>
+    <div class="line"></div><div class="crt"></div>
+    <div class="pctT"><b>READY</b><u><i></i></u></div>
+    <div class="tick">✓</div><div class="ringF"></div>
     ${hint('눌러서 스캔 시작',true)}`,
   init(){
-    const im=card.querySelector('.prize'), t=card.querySelector('.pctT');
-    function go(){ if(finished)return; card.classList.add('busy');
+    const im=card.querySelector('.prize'), t=card.querySelector('.pctT b');
+    const bar=card.querySelector('.pctT i'), ticks=[...card.querySelectorAll('.ticks i')];
+    function go(){
+      if(finished) return;
+      card.classList.add('busy');
       im.style.clipPath='inset(0)';
-      const t0=Date.now(), iv=setInterval(()=>{ const p=Math.min(100,(Date.now()-t0)/16);
-        t.textContent='SCANNING '+p.toFixed(0)+'%'; if(p>=100) clearInterval(iv); },60);
-      setTimeout(()=>finish(20,['#7dffcf','#fff','#9ad8ff']),1620); }
+      const t0=Date.now(), DUR=1900;
+      const iv=setInterval(()=>{
+        const p=Math.min(1,(Date.now()-t0)/DUR);
+        t.textContent='SCANNING '+Math.round(p*100)+'%';
+        bar.style.width=(p*100)+'%';
+        ticks.forEach(el=>el.style.top=(p*100)+'%');   // 눈금이 스캔선 따라 이동
+        if(p>=1){ clearInterval(iv); t.textContent='COMPLETE'; }
+      },40);
+      setTimeout(()=>finish(22,['#7dffcf','#fff','#9ad8ff',cfg.accent]),1920);
+    }
     card.addEventListener('click',go); return go; } }
+
 };
 
 /* ══════════ 마운트 ══════════ */
